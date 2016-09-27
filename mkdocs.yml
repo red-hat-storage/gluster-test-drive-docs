@@ -1,0 +1,4 @@
+site_name: testdocs
+pages:
+- Home: index.md
+- Readme: README.md
