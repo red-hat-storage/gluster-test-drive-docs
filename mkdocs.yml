@@ -2,3 +2,4 @@ site_name: testdocs
 pages:
 - Home: index.md
 - Readme: README.md
+- Gluster: gluster-module-2.md
