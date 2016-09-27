@@ -1,4 +1,5 @@
 site_name: testdocs
+theme: cosmo
 pages:
 - Home: index.md
 - Readme: README.md
