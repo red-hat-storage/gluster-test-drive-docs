@@ -1,10 +1,10 @@
-/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+/* Shared CSS for mkdocs; adapted from CSS for AsciiDoc */
 /* Customized for Red Hat CSA team by dblack */
 
 /* Default font. */
 body {
   font-family: "Open Sans","liberation sans", "Myriad ", "Bitstream Vera Sans", "Lucida Grande", "Luxi Sans", "Trebuchet MS", helvetica, verdana, arial, sans-serif;
-  font-size: 1em;
+//  font-size: 1em;
   color: #000000;
   text-rendering: optimizeLegibility;
 }
