@@ -9,8 +9,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-#header:before{
-  content: "RED HAT \A CLOUD \A SUCCESS \A ARCHITECTURE";
+#container:before{
+  content: "RED HAT \A STORAGE";
   white-space: pre;
   display: block;
   font-family: "Overpass","Open Sans","Helvetica Neue",sans-serif;
