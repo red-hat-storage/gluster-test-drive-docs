@@ -9,7 +9,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-#container.col-md-9:before{
+div.col-md-9:before{
   content: "RED HAT \A STORAGE";
   white-space: pre;
   display: block;
