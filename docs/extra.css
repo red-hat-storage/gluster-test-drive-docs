@@ -10,7 +10,7 @@ body {
 }
 
 div.col-md-9:before{
-  content: "RED HAT \A STORAGE";
+  content: "RED HAT \A STORAGE \A TEST DRIVE";
   white-space: pre;
   display: block;
   font-family: "Overpass","Open Sans","Helvetica Neue",sans-serif;
@@ -20,8 +20,8 @@ div.col-md-9:before{
   font-size: 1.75em;
   line-height: 80%;
   margin-bottom: 1.02857em;
-  margin-top: 2.05714em;
-  padding-top: 0.75em;
+/*  margin-top: 2.05714em; */
+/*  padding-top: 0.75em; */
   text-align: left !important;
   width: 10em;
   text-rendering: optimizeLegibility;
