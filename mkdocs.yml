@@ -1,6 +1,16 @@
-site_name: testdocs
+site_name: RHGS Test Drive Instructions
+site_favicon: images/favicon.ico
+markdown_extensions:
+    - smarty
+    - toc:
+        permalink: True
+    - sane_lists
+    - footnotes
+    - smart_strong
+    - codehilite
+    - nl2br
 theme: cosmo
 pages:
 - Home: index.md
-- Readme: README.md
-- Gluster: gluster-module-2.md
+- Modules:
+    - 'Module 2 - Volume Setup and Client Access': gluster-module-2.md
