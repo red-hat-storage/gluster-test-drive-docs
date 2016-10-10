@@ -28,7 +28,7 @@ sudo gluster peer probe rhgs2
 
 Note the success Message:
 
-    peer probe: success.
+``peer probe: success.``
 
 A *trusted pool* is defined as a group of Gluster nodes peered together for the purpose of sharing their local storage and compute resources for one or more logical filesystem namespaces. The state of a trusted pool and its members can be viewed with two important commands: `gluster peer status` and `gluster pool list`.
 
@@ -38,11 +38,11 @@ sudo gluster peer status
 
 Note the `peer status` command only reports the remote peers of the local node from which the command is run, excluding itself (localhost) from the list. This can be confusing for first-time users.
 
-  Number of Peers: 1
+``  Number of Peers: 1``
   
-  Hostname: rhgs2
-  Uuid: 15a57a7f-b895-4b5c-8031-943bd8bcb0d1
-  State: Peer in Cluster (Connected)
+``  Hostname: rhgs2``
+``  Uuid: 15a57a7f-b895-4b5c-8031-943bd8bcb0d1``
+``  State: Peer in Cluster (Connected)``
 
 
 The `pool list` command provides similar output in a tabular format and includes the local node, thus giving a complete view of the Gluster trusted pool.
