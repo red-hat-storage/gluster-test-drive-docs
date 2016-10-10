@@ -9,7 +9,7 @@ markdown_extensions:
     - smart_strong
     - codehilite
     - nl2br
-theme: cosmo
+theme: united
 pages:
 - Home: index.md
 - Modules:
