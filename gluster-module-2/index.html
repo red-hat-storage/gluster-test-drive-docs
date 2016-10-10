@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../images/favicon.ico">
+        
+
+	<title>Module 2 - Volume Setup and Client Access - RHGS Test Drive Instructions</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+        <link href="../css/base.css" rel="stylesheet">
+        <link href="../extra.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">RHGS Test Drive Instructions</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Home</a>
+                </li>
+            
+            
+            
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        
+<li class="active">
+    <a href="./">Module 2 - Volume Setup and Client Access</a>
+</li>
+
+                    
+                    </ul>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                <li >
+                    <a rel="next" href="..">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access">Lab Guide  Gluster Test Drive Module 2  Volume Setup and Client Access</a></li>
+        
+            <li><a href="#lab-agenda">Lab Agenda</a></li>
+        
+            <li><a href="#creating-the-trusted-pool">Creating the Trusted Pool</a></li>
+        
+            <li><a href="#creating-a-distributed-volume">Creating a Distributed Volume</a></li>
+        
+            <li><a href="#automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume</a></li>
+        
+            <li><a href="#viewing-volume-details">Viewing Volume Details</a></li>
+        
+            <li><a href="#nfs-client-access">NFS Client Access</a></li>
+        
+            <li><a href="#native-client-access">Native Client Access</a></li>
+        
+            <li><a href="#windows-client-access">Windows Client Access</a></li>
+        
+            <li><a href="#analysis-of-volume-types">Analysis of Volume Types</a></li>
+        
+    
+        <li class="main "><a href="#end-your-lab">End Your Lab</a></li>
+        
+    
+        <li class="main "><a href="#additional-resources">Additional Resources</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access">Lab Guide <br/> Gluster Test Drive Module 2 <br/> Volume Setup and Client Access<a class="headerlink" href="#lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access" title="Permanent link">&para;</a></h1>
+<h2 id="lab-agenda">Lab Agenda<a class="headerlink" href="#lab-agenda" title="Permanent link">&para;</a></h2>
+<p>Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab we will:</p>
+<ul>
+<li>Create a Gluster trusted pool</li>
+<li>Manually create a Gluster distributed volume</li>
+<li>Automatically create a Gluster replicated volume using gdeploy</li>
+<li>Understand basic Gluster CLI commands</li>
+<li>Write files to our volumes with the Gluter native client, NFS, and SMB</li>
+<li>Observe the data layout on the Gluster bricks</li>
+</ul>
+<h2 id="creating-the-trusted-pool">Creating the Trusted Pool<a class="headerlink" href="#creating-the-trusted-pool" title="Permanent link">&para;</a></h2>
+<p>Connect to the <strong>rhgs1</strong> server instance using its public IP address from the <strong>Addl. Info</strong> tab (Linux/Mac example below).</p>
+<pre class="codehilite"><code class="language-bash">ssh -i &lt;path-to-pem&gt; ec2-user@&lt;public_ip&gt;</code></pre>
+
+
+<p>The first step in creating a Gluster trusted pool is node peering. From one node, all of the other nodes should be peered using the gluster CLI. As our lab only has two nodes, you only need to run one peer probe command from node <strong>rhgs1</strong>. Run the below command to probe the peer.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster peer probe rhgs2</code></pre>
+
+
+<p>Note the success Message:</p>
+<p><code>peer probe: success.</code></p>
+<p>A <em>trusted pool</em> is defined as a group of Gluster nodes peered together for the purpose of sharing their local storage and compute resources for one or more logical filesystem namespaces. The state of a trusted pool and its members can be viewed with two important commands: <code>gluster peer status</code> and <code>gluster pool list</code>.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster peer status</code></pre>
+
+
+<p>Note the <code>peer status</code> command only reports the remote peers of the local node from which the command is run, excluding itself (localhost) from the list. This can be confusing for first-time users.</p>
+<p><code>Number of Peers: 1</code></p>
+<p><code>Hostname: rhgs2</code><br />
+<code>Uuid: 15a57a7f-b895-4b5c-8031-943bd8bcb0d1</code><br />
+<code>State: Peer in Cluster (Connected)</code></p>
+<p>The <code>pool list</code> command provides similar output in a tabular format and includes the local node, thus giving a complete view of the Gluster trusted pool.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster pool list</code></pre>
+
+
+<p><code>UUID                  Hostname    State</code><br />
+<code>15a57a7f-b895-4b5c-8031-943bd8bcb0d1  rhgs2       Connected</code><br />
+<code>da4fe9c8-596a-4a13-9f49-f7fa057879d6  localhost   Connected</code></p>
+<h2 id="creating-a-distributed-volume">Creating a Distributed Volume<a class="headerlink" href="#creating-a-distributed-volume" title="Permanent link">&para;</a></h2>
+<p>A unit of storage on a node is referred to as a <em>brick</em>. A brick is simply a local filesystem that has been presented to the Gluster system for consumption. Each brick has an associated <code>glusterfsd</code> process on its system.</p>
+<p>When a Gluster volume is created, its default architecture is <em>distribution</em>. A distributed volume simply groups storage from different bricks together into one unified namespace, resulting in a Gluster volume as large as the sum of all of the bricks. This architecture uses a hashing algorithm for pseudo-random distribution of files across the the bricks, resulting in statistically even distribution of files across the bricks.</p>
+<p>We will use the gluster CLI to create a 2-brick distributed volume named <em>distvol</em>. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to <code>/rhgs/brick_vdb</code>. You can view the LVM and filesystem configurations with the commands below.</p>
+<pre class="codehilite"><code class="language-bash">sudo vgdisplay -v /dev/rhgs_vg</code></pre>
+
+
+<p><code>Using volume group(s) on command line.</code><br />
+<code>--- Volume group ---</code><br />
+<code>VG Name               rhgs_vg</code><br />
+<code>System ID</code><br />
+<code>Format                lvm2</code><br />
+<code>Metadata Areas        1</code><br />
+<code>Metadata Sequence No  7</code><br />
+<code>VG Access             read/write</code><br />
+<code>VG Status             resizable</code><br />
+<code>MAX LV                0</code><br />
+<code>Cur LV                2</code><br />
+<code>Open LV               1</code><br />
+<code>Max PV                0</code><br />
+<code>Cur PV                1</code><br />
+<code>Act PV                1</code><br />
+<code>VG Size               10.00 GiB</code><br />
+<code>PE Size               4.00 MiB</code><br />
+<code>Total PE              2559</code><br />
+<code>Alloc PE / Size       2559 / 10.00 GiB</code><br />
+<code>Free  PE / Size       0 / 0</code><br />
+<code>VG UUID               sHGNaI-ODzz-aZV3-j602-aDZQ-DUUU-ddbK7X</code></p>
+<p><code>--- Logical volume ---</code><br />
+<code>LV Name                rhgs_thinpool</code><br />
+<code>VG Name                rhgs_vg</code><br />
+<code>LV UUID                A3FlQv-X8K7-IQE0-cYUZ-eEJk-ROVe-hkboxV</code><br />
+<code>LV Write Access        read/write</code><br />
+<code>LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:26 -0400</code><br />
+<code>LV Pool metadata       rhgs_thinpool_tmeta</code><br />
+<code>LV Pool data           rhgs_thinpool_tdata</code><br />
+<code>LV Status              available</code><br />
+<code># open                 2</code><br />
+<code>LV Size                9.97 GiB</code><br />
+<code>Allocated pool data    0.11%</code><br />
+<code>Allocated metadata     0.65%</code><br />
+<code>Current LE             2553</code><br />
+<code>Segments               1</code><br />
+<code>Allocation             inherit</code><br />
+<code>Read ahead sectors     auto</code><br />
+<code>- currently set to     8192</code><br />
+<code>Block device           253:2</code></p>
+<p><code>--- Logical volume ---</code><br />
+<code>LV Path                /dev/rhgs_vg/rhgs_lv</code><br />
+<code>LV Name                rhgs_lv</code><br />
+<code>VG Name                rhgs_vg</code><br />
+<code>LV UUID                L2f6yD-NhfH-2Mm7-gX5S-b8Ee-2dXL-Pb0HGK</code><br />
+<code>LV Write Access        read/write</code><br />
+<code>LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:49 -0400</code><br />
+<code>LV Pool name           rhgs_thinpool</code><br />
+<code>LV Status              available</code><br />
+<code># open                 1</code><br />
+<code>LV Size                10.00 GiB</code><br />
+<code>Mapped size            0.11%</code><br />
+<code>Current LE             2560</code><br />
+<code>Segments               1</code><br />
+<code>Allocation             inherit</code><br />
+<code>Read ahead sectors     auto</code><br />
+<code>- currently set to     8192</code><br />
+<code>Block device           253:4</code></p>
+<p><code>--- Physical volumes ---</code><br />
+<code>PV Name               /dev/xvdb</code><br />
+<code>PV UUID               OmPpve-V6qZ-fcvx-DFMq-nrPr-Aeoh-0X2FFg</code><br />
+<code>PV Status             allocatable</code><br />
+<code>Total PE / Free PE    2559 / 0</code></p>
+<pre class="codehilite"><code class="language-bash">sudo df -h /rhgs/brick_vdb</code></pre>
+
+
+<p><code>Filesystem                   Size  Used Avail Use% Mounted on</code><br />
+<code>/dev/mapper/rhgs_vg-rhgs_lv   10G   33M   10G   1% /rhgs/brick_vdb</code></p>
+<p>Now create the 2-brick <em>distvol</em> Gluster volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume create distvol rhgs1:/rhgs/brick_vdb/distvol rhgs2:/rhgs/brick_vdb/distvol</code></pre>
+
+
+<p>Note the output, volume created successfuly and we have to start the volume:</p>
+<p><code>volume create: distvol: success: please start the volume to access data</code></p>
+<p>Start the volume</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume start distvol</code></pre>
+
+
+<p><code>volume start: distvol: success</code></p>
+<h2 id="automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume<a class="headerlink" href="#automated-creation-of-a-replicate-volume" title="Permanent link">&para;</a></h2>
+<p>Gluster volume configurations can become much more complicated than the basic example above as the scale grows and additional features are leveraged. In order to simplify and automate the deployment process, Red Hat has introduced an <strong>Ansible</strong>-based deployment tool called <strong>gdeploy</strong>. With gdeploy, an end-to-end Gluster architecture can be defined in a configuration file, and the entire deployment can be executed with a single command.</p>
+<p>We will now build a <em>replicated</em> volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.</p>
+<p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/vdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the rep01 volume.</p>
+<p>View the gdeploy configuration file with the below command.</p>
+<pre class="codehilite"><code class="language-bash">cat ~/rep01.conf</code></pre>
+
+
+<p><code>#</code><br />
+<code># Usage:</code><br />
+<code>#       gdeploy -c rep01.conf</code><br />
+<code>#</code><br />
+<code># This does backend setup first and then create the volume using the</code><br />
+<code># setup bricks.</code><br />
+<code>#</code><br />
+<code>#</code></p>
+<p><code>[hosts]</code><br />
+<code>n1</code><br />
+<code>n2</code></p>
+<p><code># Common backend setup for 2 of the hosts.</code><br />
+<code>[backend-setup]</code><br />
+<code>devices=vdc</code><br />
+<code>vgs=rhgs_vg2</code><br />
+<code>pools=rhgs_thinpool2</code><br />
+<code>lvs=rhgs_lv2</code><br />
+<code>mountpoints=/rhgs/brick_vdc</code><br />
+<code>brick_dirs=/rhgs/brick_vdc/rep01</code></p>
+<p><code>[volume]</code><br />
+<code>action=create</code><br />
+<code>volname=rep01</code><br />
+<code>replica=yes</code><br />
+<code>replica_count=2</code><br />
+<code>force=yes</code></p>
+<p>In order to use <code>gdeploy</code>, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).</p>
+<p><strong>NOTE:</strong> <em>Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the ec2-user user on each node to login as the root user on all nodes using the <code>~/.ssh/id_rsa</code> private key.</em> <strong>The commands below are for reference only and do not need to be run for this lab.</strong></p>
+<p><code>ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''</code><br />
+<code>for i in 1 2; do ssh-copy-id -i ~/.ssh/id_rsa root@n$i; done</code></p>
+<p><em>With passwordless ssh configured, we can deploy the <strong>rep01</strong> volume using the <code>gdeploy</code> command (NOTE because we rely on the ssh keys, we do not need sudo for this command).</em></p>
+<pre class="codehilite"><code class="language-bash">gdeploy -vv -c ~/rep01.conf</code></pre>
+
+
+<h2 id="viewing-volume-details">Viewing Volume Details<a class="headerlink" href="#viewing-volume-details" title="Permanent link">&para;</a></h2>
+<p>Information about Gluster volumes, including their architecture, configuration specifics, processes, and ports can be viewed with the below two commands.</p>
+<p>The <code>gluster volume info</code> command shows configuration and operational details about your Gluster volumes. You can also pass a specific volume name at the end of the command to show output for only one volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume info</code></pre>
+
+
+<p><code>Volume Name: distvol</code><br />
+<code>Type: Distribute</code><br />
+<code>Volume ID: f53e4874-585a-4b2f-9949-c92ad5bc31b6</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 2</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_vdb/distvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_vdb/distvol</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
+<p><code>Volume Name: rep01</code><br />
+<code>Type: Replicate</code><br />
+<code>Volume ID: 8cb60a83-0fec-4698-81fe-0dc2d0820d36</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 1 x 2 = 2</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_vdc/rep01</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_vdc/rep01</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
+<p>The <code>gluster volume status</code> command provides other details about the operational state of volume, including process IDs and TCP ports. Here we view the output for volume <strong>rep01</strong>.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume status rep01</code></pre>
+
+
+<p><code>Status of volume: rep01</code><br />
+<code>Gluster process                                TCP Port  RDMA Port  Online  Pid</code><br />
+<code>---------------------------------------------------------------------------------</code><br />
+<code>Brick rhgs1:/rhgs/brick_vdc/rep01              49153     0          Y       4613</code><br />
+<code>Brick rhgs2:/rhgs/brick_vdc/rep01              49153     0          Y       3969</code><br />
+<code>NFS Server on localhost                        2049      0          Y       4635</code><br />
+<code>Self-heal Daemon on localhost                  N/A       N/A        Y       4640</code><br />
+<code>NFS Server on rhgs2                            2049      0          Y       3991</code><br />
+<code>Self-heal Daemon on rhgs2                      N/A       N/A        Y       3996</code></p>
+<p><code>Task Status of Volume rep01</code><br />
+<code>---------------------------------------------------------------------------------</code><br />
+<code>There are no active volume tasks</code></p>
+<h2 id="nfs-client-access">NFS Client Access<a class="headerlink" href="#nfs-client-access" title="Permanent link">&para;</a></h2>
+<p>A Gluster volume can be accessed through multiple standard client protocols, as well as through specialized methods including the OpenStack Swift protocol and a direct API.</p>
+<p>For many common use cases, the well-established NFS protocol is used for ease of implementation and compatibility with existing applications and architectures. For some particular use cases, the NFS protocol may also offer a performance benefit over other access methods.</p>
+<p>You can connect to the <strong>client1</strong> system from your local ssh client using the lab PEM file (Linux/Mac example below).</p>
+<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+
+
+<p>Here we mount the Gluster distvol volume we created above on a RHEL client.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/nfs/distvol</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">sudo mount -t nfs rhgs1:/distvol /rhgs/client/nfs/distvol</code></pre>
+
+
+<p>Check the mount and observe the output.</p>
+<pre class="codehilite"><code class="language-bash">df -h /rhgs/client/nfs/distvol</code></pre>
+
+
+<p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
+<code>rhgs1:/distvol      20G   66M   20G   1% /rhgs/client/nfs/distvol</code></p>
+<pre class="codehilite"><code class="language-bash">mount | grep distvol</code></pre>
+
+
+<p><code>rhgs1:/distvol on /rhgs/client/nfs/distvol type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.100.1.11,mountvers=3,mountport=38465,mountproto=tcp,local_lock=none,addr=10.100.1.11)</code></p>
+<p>Create and set permissions on a directory to hold our data.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir /rhgs/client/nfs/distvol/mydir
+sudo chmod 777 /rhgs/client/nfs/distvol/mydir</code></pre>
+
+
+<p>Add 100 files to the directory.</p>
+<pre class="codehilite"><code class="language-bash">for i in {001..100}; do echo hello$i &gt; /rhgs/client/nfs/distvol/mydir/file$i; done</code></pre>
+
+
+<p>List the directory, counting its contents.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/nfs/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>100</code></p>
+<h2 id="native-client-access">Native Client Access<a class="headerlink" href="#native-client-access" title="Permanent link">&para;</a></h2>
+<p>The Gluster native client utilizes <em>Filesystem in Userspace (FUSE)</em> technology to implement a client access protocol that is POSIX-compatible and has the distinct advantage that the client is fully aware of the Gluster volume architecture. This means that with a redundant volume architecture (replicate or disperse), the client automatically has <em>highly-available</em> access to the Gluster volume data without any special configuration.</p>
+<p>Additionally, the native client can benefit from multiple data paths and specific protocol tunings, allowing for greater overall throughput and lower latency under most workloads.</p>
+<p>Here on the same client we mount the Gluster <strong>distvol</strong> volume a second time, this time using the Gluster native client.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/native/distvol
+sudo mount -t glusterfs rhgs1:distvol /rhgs/client/native/distvol/</code></pre>
+
+
+<p>Examine the new mount.</p>
+<pre class="codehilite"><code class="language-bash">df -h /rhgs/client/native/distvol/</code></pre>
+
+
+<p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
+<code>rhgs1:distvol       20G   67M   20G   1% /rhgs/client/native/distvol</code></p>
+<p>We can see here that the Gluster volume is <strong>mounted twice by the two different protocols</strong>.</p>
+<pre class="codehilite"><code class="language-bash">mount | grep distvol</code></pre>
+
+
+<p><code>rhgs1:/distvol on /rhgs/client/nfs/distvol type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.100.1.11,mountvers=3,mountport=38465,mountproto=tcp,local_lock=none,addr=10.100.1.11)</code><br />
+<code>rhgs1:distvol on /rhgs/client/native/distvol type fuse.glusterfs (rw,relatime,user_id=0,group_id=0,default_permissions,allow_other,max_read=131072)</code></p>
+<p>Listing the files from our new native mount point, we can see that the files we created through the original NFS mount point are visible.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>100</code></p>
+<p>Now we&rsquo;ll create an additional set of 100 files, this time through the new native client mount point.</p>
+<pre class="codehilite"><code class="language-bash">for i in {101..200}; do echo hello$i &gt; /rhgs/client/native/distvol/mydir/file$i; done</code></pre>
+
+
+<p>We can now see that the 200 total files are available through <strong>both</strong> the native and NFS mount points.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>200</code></p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/nfs/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>200</code></p>
+<h2 id="windows-client-access">Windows Client Access<a class="headerlink" href="#windows-client-access" title="Permanent link">&para;</a></h2>
+<p>In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the <strong>rhgs1</strong> node from your local ssh client.</p>
+<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+
+
+<p>From node <strong>rhgs1</strong>, run the below commands to modify the <strong>rep01</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 stat-prefetch off</code></pre>
+
+
+<p><code>volume set: success</code></p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 server.allow-insecure on</code></pre>
+
+
+<p><code>volume set: success</code></p>
+<pre class="codehilite"><code class="language-bash">sudo sed -i '/^end-volume/i option rpc-auth-allow-insecure on' /etc/glusterfs/glusterd.vol
+sudo systemctl restart glusterd.service</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 storage.batch-fsync-delay-usec 0</code></pre>
+
+
+<p><code>volume set: success</code></p>
+<pre class="codehilite"><code class="language-bash">sudo adduser samba-user
+echo -ne &quot;redhat\nredhat\n&quot; | sudo smbpasswd -s -a samba-user</code></pre>
+
+
+<p><code>Added user samba-user.</code></p>
+<p>Here we temporarily mount the client interface on the rhgs1 server in order to create a directory for our Windows client to write to.</p>
+<pre class="codehilite"><code class="language-bash">sudo mount -t glusterfs rhgs1:rep01 /mnt
+sudo mkdir /mnt/mysmbdir
+sudo chmod 777 /mnt/mysmbdir
+sudo umount /mnt</code></pre>
+
+
+<p>Using your local RDP client, connect to the public IP address of the Windows client system. The username is <strong>Administrator</strong> and the password is <strong>RedHat1</strong>. You can leave the domain field blank.</p>
+<p>Using Windows PowerShell, we mount the Gluster volume to the Z: drive.</p>
+<pre class="codehilite"><code>net use Z: \\10.100.1.11\gluster-rep01 redhat /USER:samba-user</code></pre>
+
+
+<p>We create 100 new files in the mysmbdir subdirectory.</p>
+<pre class="codehilite"><code>for($i=1; $i -le 100; $i++){echo hello$i &gt; Z:\mysmbdir\winfile$i}</code></pre>
+
+
+<p>And we can confirm that there are 100 new files in place.</p>
+<pre class="codehilite"><code>dir Z:\mysmbdir | measure-object -line</code></pre>
+
+
+<p><code>Lines Words          Characters          Property</code><br />
+<code>----- -----          ----------          --------</code><br />
+<code>100</code></p>
+<p><strong>NOTE:</strong> <em>Due to locking incompatibilities, it is <strong>NOT</strong> supported to to use the SMB/CIFS protocol (Windows client) at the same time as another client access method on the same Gluster volume. Doing so will result in data corruption. For the sake of this lab, we do this only to illustrate Gluster’s functionality.</em></p>
+<p>Connect to <em>client1</em> again with your local ssh client.</p>
+<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+
+
+<p>From here, you can mount the <strong>rep01</strong> volume and see the 100 new files added from the Windows client are visible.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/native/rep01
+sudo mount -t glusterfs rhgs1:rep01 /rhgs/client/native/rep01</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/rep01/mysmbdir | wc -l</code></pre>
+
+
+<p><code>100</code></p>
+<h2 id="analysis-of-volume-types">Analysis of Volume Types<a class="headerlink" href="#analysis-of-volume-types" title="Permanent link">&para;</a></h2>
+<p>Connect to <strong>rhgs1</strong> again with your local ssh client.</p>
+<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+
+
+<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs1</strong>, we can see that only a subset of the 200 files that were created are present on this brick. (Note the numbers you see may be different than the examples below.)</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdb/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>95</code></p>
+<p>Now connect to <strong>rhgs2</strong> &ndash; As a convenience, you can do this most simply directly from node rhgs1 (you will need to connect at the root user).</p>
+<pre class="codehilite"><code class="language-bash">ssh root@rhgs2</code></pre>
+
+
+<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs2</strong>, we can see that the <em>remainder of the 200 files are located on this brick</em>.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdb/distvol/mydir/ | wc -l</code></pre>
+
+
+<p><code>105</code></p>
+<p>This is the natural effect of the <em>Distributed Hash Algorithm</em>. Given the bricks in a distribute volume, the files will be pseudo-randomly placed among those bricks in a statistically even pattern.</p>
+<p>While still on node <strong>rhgs2</strong>, take a look at the files in the brick backend for the <strong>rep01</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l</code></pre>
+
+
+<p><code>100</code></p>
+<p>Above we created 100 files in this directory from the Windows client, and this time we see <em>exactly 100 files on the brick backend</em>. This is the effect of the <em>Automatic File Replication</em>, which synchronously places copies of the files written by the clients on the replica peer bricks.</p>
+<p>Exit from node <strong>rhgs2</strong> (simply type exit at the command line), returning to node <strong>rhgs1</strong>. Look at the <strong>rep01</strong> brick backend on this node and confirm that the file count matches that of node rhgs2.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l</code></pre>
+
+
+<p><code>100</code></p>
+<h1 id="end-your-lab">End Your Lab<a class="headerlink" href="#end-your-lab" title="Permanent link">&para;</a></h1>
+<p>This concludes Gluster Test Drive Module 2 - Volume Setup and Client Access. Please follow these steps to end your lab and evaluate the experience.</p>
+<ol>
+<li>[1] Close your remote sessions.</li>
+<li>In the <em>qwik</em>LABS page, click <strong>End Lab</strong>.</li>
+<li>In the confirmation message, click <strong>OK</strong>.</li>
+<li>(Optional) Tell us about your lab experience!</li>
+</ol>
+<h1 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h1>
+<ul>
+<li>https://www.redhat.com/en/technologies/storage/gluster</li>
+</ul></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <center>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</center>
+        </footer>
+
+        <script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            From here you can search these documents. Enter
+                            your search terms below.
+                        </p>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                            </div>
+                        </form>
+                        <div id="mkdocs-search-results"></div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
