@@ -129,7 +129,7 @@ ul > li > * { color: black; }
   white-space: pre-wrap;
 }
 
-#codehilite {
+div.codehilite {
   font-family: "Liberation Mono", Courier, monospace;
   font-size: inherit;
   color: #a30000;
