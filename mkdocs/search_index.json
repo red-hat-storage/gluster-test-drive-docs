@@ -72,8 +72,28 @@
         },
         {
             "location": "/gluster-module-1/",
-            "text": "",
+            "text": "Gluster Test Drive Module 1 \n Introduction to Gluster Concepts\n\u00b6\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nData Placement\n\u00b6\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nData Accessibility\n\u00b6\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDeployment\n\u00b6",
             "title": "Module 1 - Introduction to Gluster concepts"
+        },
+        {
+            "location": "/gluster-module-1/#gluster-test-drive-module-1-introduction-to-gluster-concepts",
+            "text": "",
+            "title": "Gluster Test Drive Module 1  Introduction to Gluster Concepts"
+        },
+        {
+            "location": "/gluster-module-1/#data-placement",
+            "text": "",
+            "title": "Data Placement"
+        },
+        {
+            "location": "/gluster-module-1/#data-accessibility",
+            "text": "",
+            "title": "Data Accessibility"
+        },
+        {
+            "location": "/gluster-module-1/#deployment",
+            "text": "",
+            "title": "Deployment"
         },
         {
             "location": "/gluster-module-2/",
