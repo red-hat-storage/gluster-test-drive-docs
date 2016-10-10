@@ -17,7 +17,6 @@
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-17.png)
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-18.png)
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png)
-![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-20.png)
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-21.png)
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-22.png)
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-23.png)
