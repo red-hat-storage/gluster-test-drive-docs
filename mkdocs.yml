@@ -13,4 +13,5 @@ theme: united
 pages:
 - Introduction: index.md
 - Modules:
+    - 'Module 1 - Introduction to Gluster concepts': gluster-module-1.md
     - 'Module 2 - Volume Setup and Client Access': gluster-module-2.md
