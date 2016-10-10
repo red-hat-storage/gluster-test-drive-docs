@@ -122,9 +122,19 @@ ul > li > * { color: black; }
   font-family: "Liberation Mono", Courier, monospace;
   font-size: inherit;
   color: #a30000;
+  background: transparent;
+  border: transparent;
   padding: 0;
   margin: 0;
   white-space: pre-wrap;
+}
+
+#codehilite {
+  font-family: "Liberation Mono", Courier, monospace;
+  font-size: inherit;
+  color: #a30000;
+  background: #f5f5f5;
+  border: solid 1px #ccc;
 }
 
 
