@@ -4,6 +4,10 @@ Welcome to the Red Hat Gluster Storage Hands-on Lab. To make your Gluster experi
 
 - **Module 1 :** Introduction to Gluster concepts
 - **Module 2 :** Volume Setup and Client Access
+- **Module 3 :** Volume Operations and Administration
+- **Module 4 :** Disperse Volumes (Erasure Coding)
+- **Module 5 :** Gluster Internals
+- **Module 6 :** Tiered Volumes (Cache Tiering)
 
 ## What is Gluster?
 
