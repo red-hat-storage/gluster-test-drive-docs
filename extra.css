@@ -115,8 +115,8 @@ p {
 ul, ol, li > p {
   margin-top: 0;
 }
-ul > li     { color: #aaa; }
-ul > li > * { color: black; }
+ul > li     { color: #004153; }
+ul > li > * { color: #004153; }
 
 .monospaced, code, pre {
   font-family: "Liberation Mono", Courier, monospace;
