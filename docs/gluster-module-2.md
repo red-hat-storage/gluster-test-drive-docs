@@ -28,7 +28,7 @@ sudo gluster peer probe rhgs2
 
 Note the success Message:
 
-> peer probe: success.
+``peer probe: success.``
 
 A *trusted pool* is defined as a group of Gluster nodes peered together for the purpose of sharing their local storage and compute resources for one or more logical filesystem namespaces. The state of a trusted pool and its members can be viewed with two important commands: `gluster peer status` and `gluster pool list`.
 
