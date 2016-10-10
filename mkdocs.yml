@@ -11,6 +11,6 @@ markdown_extensions:
     - nl2br
 theme: united
 pages:
-- Home: index.md
+- Introduction: index.md
 - Modules:
     - 'Module 2 - Volume Setup and Client Access': gluster-module-2.md
