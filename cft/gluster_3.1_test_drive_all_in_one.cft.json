@@ -39,7 +39,7 @@
     "NATInstanceType" : {
       "Description" : "NAT Device EC2 instance type",
       "Type" : "String",
-      "Default" : "m3.xlarge",
+      "Default" : "m3.large",
       "NoEcho": "true",
       "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m3.xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
       "ConstraintDescription" : "must be a valid EC2 instance type."
@@ -55,7 +55,7 @@
     "RedHatStorageClientInstanceType" : {
       "Description" : "Red Hat Storage Clients EC2 instance type",
       "Type" : "String",
-      "Default" : "m3.large",
+      "Default" : "m3.medium",
       "NoEcho": "true"
     }
 },
