@@ -2,8 +2,8 @@
 
 Welcome to the Red Hat Gluster Storage Hands-on Lab. To make your Gluster experience awesome, the contents of this test drive have been divided into following modules.
 
-- **[Module 1 :** Introduction to Gluster concepts](gluster-module-1)
-- **[Module 2 :** Volume Setup and Client Access](gluster-module-2)
+- [**Module 1 :** Introduction to Gluster concepts](gluster-module-1)
+- [**Module 2 :** Volume Setup and Client Access](gluster-module-2)
 - **Module 3 :** Volume Operations and Administration
 - **Module 4 :** Disperse Volumes (Erasure Coding)
 - **Module 5 :** Tiered Volumes (Cache Tiering)
