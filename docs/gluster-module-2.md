@@ -17,16 +17,20 @@ Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In 
 Connect to the **rhgs1** server instance using its public IP address from the **Addl. Info** tab (Linux/Mac example below).
 
 ```bash
-ssh -i <path-to-pem> ec2-user@<public_ip>
+ssh gluster@<rhgs1PublicIP>
 ```
 
-The first step in creating a Gluster trusted pool is node peering. From one node, all of the other nodes should be peered using the gluster CLI. As our lab only has two nodes, you only need to run one peer probe command from node **rhgs1**. Run the below command to probe the peer.
+The first step in creating a Gluster trusted pool is node peering. From one node, all of the other nodes should be peered using the gluster CLI. Our lab has 6 Gluster nodes in the local subnet. You will run `peer probe` commands from only node **rhgs1**.
 
 ```bash
 sudo gluster peer probe rhgs2
+sudo gluster peer probe rhgs3
+sudo gluster peer probe rhgs4
+sudo gluster peer probe rhgs5
+sudo gluster peer probe rhgs6
 ```
 
-Note the success Message:
+Note the success Messages:
 
 ``peer probe: success.``
 
@@ -38,10 +42,26 @@ sudo gluster peer status
 
 Note the `peer status` command only reports the remote peers of the local node from which the command is run, excluding itself (localhost) from the list. This can be confusing for first-time users.
 
-``Number of Peers: 1``
-  
+``Number of Peers: 5``
+
 ``Hostname: rhgs2``
-``Uuid: 15a57a7f-b895-4b5c-8031-943bd8bcb0d1``
+``Uuid: 64edb288-524e-4918-b421-74b76b80a44b``
+``State: Peer in Cluster (Connected)``
+
+``Hostname: rhgs3``
+``Uuid: e22261c4-3e34-49e3-b4e3-da9a8c449471``
+``State: Peer in Cluster (Connected)``
+
+``Hostname: rhgs4``
+``Uuid: fbd4ab10-f50b-4ca8-b973-a9a54dfed47d``
+``State: Peer in Cluster (Connected)``
+
+``Hostname: rhgs5``
+``Uuid: c351dead-7326-4370-a6fe-90d7b5ac8b45``
+``State: Peer in Cluster (Connected)``
+
+``Hostname: rhgs6``
+``Uuid: 8b8384ae-cc6e-4403-ab3b-b7cc3c21029f``
 ``State: Peer in Cluster (Connected)``
 
 
@@ -52,8 +72,12 @@ sudo gluster pool list
 ```
 
 ``UUID					Hostname 	State``
-``15a57a7f-b895-4b5c-8031-943bd8bcb0d1	rhgs2   	Connected ``
-``da4fe9c8-596a-4a13-9f49-f7fa057879d6	localhost	Connected``
+``64edb288-524e-4918-b421-74b76b80a44b	rhgs2    	Connected ``
+``e22261c4-3e34-49e3-b4e3-da9a8c449471	rhgs3    	Connected ``
+``fbd4ab10-f50b-4ca8-b973-a9a54dfed47d	rhgs4    	Connected ``
+``c351dead-7326-4370-a6fe-90d7b5ac8b45	rhgs5    	Connected ``
+``8b8384ae-cc6e-4403-ab3b-b7cc3c21029f	rhgs6    	Connected ``
+``c0f78e93-ad8f-4849-b8f3-ebdb2f7f4d17	localhost	Connected``
 
 
 
@@ -63,15 +87,15 @@ A unit of storage on a node is referred to as a *brick*. A brick is simply a loc
 
 When a Gluster volume is created, its default architecture is *distribution*. A distributed volume simply groups storage from different bricks together into one unified namespace, resulting in a Gluster volume as large as the sum of all of the bricks. This architecture uses a hashing algorithm for pseudo-random distribution of files across the the bricks, resulting in statistically even distribution of files across the bricks.
 
-We will use the gluster CLI to create a 2-brick distributed volume named *distvol*. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to `/rhgs/brick_vdb`. You can view the LVM and filesystem configurations with the commands below.
+We will use the gluster CLI to create a 2-brick distributed volume named *distvol*. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to `/rhgs/brick_xvdb`. You can view the LVM and filesystem configurations with the commands below.
 
 ```bash
-sudo vgdisplay -v /dev/rhgs_vg
+sudo vgdisplay -v /dev/rhgs_vg1
 ```
 
 ``    Using volume group(s) on command line.``
 ``  --- Volume group ---``
-``  VG Name               rhgs_vg``
+``  VG Name               rhgs_vg1``
 ``  System ID             ``
 ``  Format                lvm2``
 ``  Metadata Areas        1``
@@ -92,13 +116,13 @@ sudo vgdisplay -v /dev/rhgs_vg
 ``  VG UUID               sHGNaI-ODzz-aZV3-j602-aDZQ-DUUU-ddbK7X``
    
 ``  --- Logical volume ---``
-``  LV Name                rhgs_thinpool``
-``  VG Name                rhgs_vg``
+``  LV Name                rhgs_thinpool1``
+``  VG Name                rhgs_vg1``
 ``  LV UUID                A3FlQv-X8K7-IQE0-cYUZ-eEJk-ROVe-hkboxV``
 ``  LV Write Access        read/write``
-``  LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:26 -0400``
-``  LV Pool metadata       rhgs_thinpool_tmeta``
-``  LV Pool data           rhgs_thinpool_tdata``
+``  LV Creation host, time rhgs1.gluster.lab, 2016-07-27 10:56:26 -0400``
+``  LV Pool metadata       rhgs_thinpool1_tmeta``
+``  LV Pool data           rhgs_thinpool1_tdata``
 ``  LV Status              available``
 ``  # open                 2``
 ``  LV Size                9.97 GiB``
@@ -112,13 +136,13 @@ sudo vgdisplay -v /dev/rhgs_vg
 ``  Block device           253:2``
    
 ``  --- Logical volume ---``
-``  LV Path                /dev/rhgs_vg/rhgs_lv``
-``  LV Name                rhgs_lv``
-``  VG Name                rhgs_vg``
+``  LV Path                /dev/rhgs_vg1/rhgs_lv1``
+``  LV Name                rhgs_lv1``
+``  VG Name                rhgs_vg1``
 ``  LV UUID                L2f6yD-NhfH-2Mm7-gX5S-b8Ee-2dXL-Pb0HGK``
 ``  LV Write Access        read/write``
-``  LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:49 -0400``
-``  LV Pool name           rhgs_thinpool``
+``  LV Creation host, time rhgs1.gluster.lab, 2016-07-27 10:56:49 -0400``
+``  LV Pool name           rhgs_thinpool1``
 ``  LV Status              available``
 ``  # open                 1``
 ``  LV Size                10.00 GiB``
@@ -137,17 +161,23 @@ sudo vgdisplay -v /dev/rhgs_vg
 ``  Total PE / Free PE    2559 / 0``
 
 ```bash
-sudo df -h /rhgs/brick_vdb
+sudo df -h /rhgs/brick_xvdb
 ```
-``Filesystem                   Size  Used Avail Use% Mounted on``
-``/dev/mapper/rhgs_vg-rhgs_lv   10G   33M   10G   1% /rhgs/brick_vdb``
+``Filesystem                     Size  Used Avail Use% Mounted on``
+``/dev/mapper/rhgs_vg1-rhgs_lv1   10G   33M   10G   1% /rhgs/brick_xvdb``
 
 
 Now create the 2-brick *distvol* Gluster volume.
 
 
 ```bash
-sudo gluster volume create distvol rhgs1:/rhgs/brick_vdb/distvol rhgs2:/rhgs/brick_vdb/distvol
+sudo gluster volume create distvol \
+rhgs1:/rhgs/brick_xvdb/distvol \
+rhgs2:/rhgs/brick_xvdb/distvol \
+rhgs3:/rhgs/brick_xvdb/distvol \
+rhgs4:/rhgs/brick_xvdb/distvol \
+rhgs5:/rhgs/brick_xvdb/distvol \
+rhgs6:/rhgs/brick_xvdb/distvol
 ```
 
 Note the output, volume created successfuly and we have to start the volume:
@@ -168,54 +198,46 @@ Gluster volume configurations can become much more complicated than the basic ex
 
 We will now build a *replicated* volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.
 
-For this replicated volume deployment, the backing filesystems have *not* been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the `/dev/vdc` block devices with *LVM* thin provisioning and format and mount an *XFS* filesystem. It then further defines the Gluster volume architecture for the rep01 volume.
+For this replicated volume deployment, the backing filesystems have *not* been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the `/dev/xvdc` block devices with *LVM* thin provisioning and format and mount an *XFS* filesystem. It then further defines the Gluster volume architecture for the rep01 volume.
 
 View the gdeploy configuration file with the below command.
 
 ```bash
-cat ~/rep01.conf
+cat ~/repvol.conf
 ```
 
-``#``
-``# Usage:``
-``#       gdeploy -c rep01.conf``
-``#``
-``# This does backend setup first and then create the volume using the``
-``# setup bricks.``
-``#``
-``#``
-
 ``[hosts]``
-``n1``
-``n2``
+``rhgs1``
+``rhgs2``
 
 ``# Common backend setup for 2 of the hosts.``
 ``[backend-setup]``
-``devices=vdc``
+``devices=xvdc``
 ``vgs=rhgs_vg2``
 ``pools=rhgs_thinpool2``
 ``lvs=rhgs_lv2``
-``mountpoints=/rhgs/brick_vdc``
-``brick_dirs=/rhgs/brick_vdc/rep01``
+``mountpoints=/rhgs/brick_xvdc``
+``brick_dirs=/rhgs/brick_xvdc/repvol``
 
 ``[volume]``
 ``action=create``
-``volname=rep01``
+``volname=repvol``
 ``replica=yes``
 ``replica_count=2``
 ``force=yes``
 
+
 In order to use `gdeploy`, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).
 
-**NOTE:** *Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the ec2-user user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
+**NOTE:** *Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
 
 ``ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''``
-``for i in 1 2; do ssh-copy-id -i ~/.ssh/id_rsa root@n$i; done``
+``for i in {1..6}; do ssh-copy-id -i ~/.ssh/id_rsa root@rhgs$i; done``
 
-*With passwordless ssh configured, we can deploy the **rep01** volume using the `gdeploy` command (NOTE because we rely on the ssh keys, we do not need sudo for this command).*
+*With passwordless ssh configured, we can deploy the **repvol** volume using the `gdeploy` command (NOTE because we rely on the ssh keys, we do not need `sudo` for this command).*
 
 ```bash
-gdeploy -vv -c ~/rep01.conf
+gdeploy -vv -c ~/repvol.conf
 ```
 
 ## Viewing Volume Details
@@ -230,47 +252,60 @@ sudo gluster volume info
 
 ``Volume Name: distvol``
 ``Type: Distribute``
-``Volume ID: f53e4874-585a-4b2f-9949-c92ad5bc31b6``
+``Volume ID: 95b1dc7f-277d-47b4-95db-e1981a8f18b9``
 ``Status: Started``
-``Number of Bricks: 2``
+``Number of Bricks: 6``
 ``Transport-type: tcp``
 ``Bricks:``
-``Brick1: rhgs1:/rhgs/brick_vdb/distvol``
-``Brick2: rhgs2:/rhgs/brick_vdb/distvol``
+``Brick1: rhgs1:/rhgs/brick_xvdb/distvol``
+``Brick2: rhgs2:/rhgs/brick_xvdb/distvol``
+``Brick3: rhgs3:/rhgs/brick_xvdb/distvol``
+``Brick4: rhgs4:/rhgs/brick_xvdb/distvol``
+``Brick5: rhgs5:/rhgs/brick_xvdb/distvol``
+``Brick6: rhgs6:/rhgs/brick_xvdb/distvol``
 ``Options Reconfigured:``
 ``performance.readdir-ahead: on``
  
-``Volume Name: rep01``
+``Volume Name: repvol``
 ``Type: Replicate``
-``Volume ID: 8cb60a83-0fec-4698-81fe-0dc2d0820d36``
+``Volume ID: c16eaa3d-7ccc-42ad-bd71-d43bb16229b2``
 ``Status: Started``
 ``Number of Bricks: 1 x 2 = 2``
 ``Transport-type: tcp``
 ``Bricks:``
-``Brick1: rhgs1:/rhgs/brick_vdc/rep01``
-``Brick2: rhgs2:/rhgs/brick_vdc/rep01``
+``Brick1: rhgs1:/rhgs/brick_xvdc/repvol``
+``Brick2: rhgs2:/rhgs/brick_xvdc/repvol``
 ``Options Reconfigured:``
 ``performance.readdir-ahead: on``
 
-The `gluster volume status` command provides other details about the operational state of volume, including process IDs and TCP ports. Here we view the output for volume **rep01**.
+
+The `gluster volume status` command provides other details about the operational state of volume, including process IDs and TCP ports. Here we view the output for volume **repvol**.
 
 ```bash
-sudo gluster volume status rep01
+sudo gluster volume status repvol
 ```
 
-``Status of volume: rep01``
-``Gluster process                                TCP Port  RDMA Port  Online  Pid``
-``---------------------------------------------------------------------------------``
-``Brick rhgs1:/rhgs/brick_vdc/rep01              49153     0          Y       4613 ``
-``Brick rhgs2:/rhgs/brick_vdc/rep01              49153     0          Y       3969 ``
-``NFS Server on localhost                        2049      0          Y       4635 ``
-``Self-heal Daemon on localhost                  N/A       N/A        Y       4640 ``
-``NFS Server on rhgs2                            2049      0          Y       3991 ``
-``Self-heal Daemon on rhgs2                      N/A       N/A        Y       3996 ``
- 
-``Task Status of Volume rep01``
-``---------------------------------------------------------------------------------``
+``Status of volume: repvol``
+``Gluster process                             TCP Port  RDMA Port  Online  Pid``
+``------------------------------------------------------------------------------``
+``Brick rhgs1:/rhgs/brick_xvdc/repvol         49153     0          Y       13363``
+``Brick rhgs2:/rhgs/brick_xvdc/repvol         49153     0          Y       12465``
+``NFS Server on localhost                     2049      0          Y       13385``
+``Self-heal Daemon on localhost               N/A       N/A        Y       13390``
+``NFS Server on rhgs5                         2049      0          Y       11945``
+``Self-heal Daemon on rhgs5                   N/A       N/A        Y       11950``
+``NFS Server on rhgs3                         2049      0          Y       11945``
+``Self-heal Daemon on rhgs3                   N/A       N/A        Y       11950``
+``NFS Server on rhgs2                         2049      0          Y       12487``
+``Self-heal Daemon on rhgs2                   N/A       N/A        Y       12492``
+``NFS Server on rhgs4                         2049      0          Y       11974``
+``Self-heal Daemon on rhgs4                   N/A       N/A        Y       11979``
+``NFS Server on rhgs6                         2049      0          Y       11833``
+``Self-heal Daemon on rhgs6                   N/A       N/A        Y       11838``
+``Task Status of Volume repvol``
+``------------------------------------------------------------------------------``
 ``There are no active volume tasks``
+
 
 
 ## NFS Client Access
@@ -278,10 +313,10 @@ A Gluster volume can be accessed through multiple standard client protocols, as 
 
 For many common use cases, the well-established NFS protocol is used for ease of implementation and compatibility with existing applications and architectures. For some particular use cases, the NFS protocol may also offer a performance benefit over other access methods.
 
-You can connect to the **client1** system from your local ssh client using the lab PEM file (Linux/Mac example below).
+You can connect to the **client1** system via `ssh` directly from the rhgs1 system.
 
 ```bash
-ssh -i <PEM_FILE> ec2-user@<PUBLIC_IP>
+ssh gluster@client1
 ```
 
 Here we mount the Gluster distvol volume we created above on a RHEL client.

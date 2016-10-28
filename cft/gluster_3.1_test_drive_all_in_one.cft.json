@@ -1553,7 +1553,8 @@
               "packages": {
                 "yum": {
                   "ntp" : [],
-                  "sshd" : []
+                  "sshd" : [],
+                  "nfs-utils" : []
                 }
               }
             }
@@ -1658,7 +1659,8 @@
               "packages": {
                 "yum": {
                   "ntp" : [],
-                  "sshd" : []
+                  "sshd" : [],
+                  "nfs-utils" : []
                 }
               }
             }
