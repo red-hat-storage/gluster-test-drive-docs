@@ -140,7 +140,7 @@
 
 <h1 id="lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access">Lab Guide <br/> Gluster Test Drive Module 2 <br/> Volume Setup and Client Access</h1>
 <h2 id="lab-agenda">Lab Agenda</h2>
-<p>Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab we will:</p>
+<p>Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab you will:</p>
 <ul>
 <li>Create a Gluster trusted pool</li>
 <li>Manually create a Gluster distributed volume</li>
@@ -314,7 +314,9 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 <code>replica_count=2</code><br />
 <code>force=yes</code></p>
 <p>In order to use <code>gdeploy</code>, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).</p>
+<blockquote>
 <p><strong>NOTE:</strong> <em>Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the <code>~/.ssh/id_rsa</code> private key.</em> <strong>The commands below are for reference only and do not need to be run for this lab.</strong></p>
+</blockquote>
 <p><code>ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''</code><br />
 <code>for i in {1..6}; do ssh-copy-id -i ~/.ssh/id_rsa root@rhgs$i; done</code></p>
 <p><em>With passwordless ssh configured, we can deploy the <strong>repvol</strong> volume using the <code>gdeploy</code> command (NOTE because we rely on the ssh keys, we do not need <code>sudo</code> for this command).</em></p>
@@ -503,7 +505,9 @@ sudo umount /mnt</code></pre>
 <p><code>Lines Words          Characters          Property</code><br />
 <code>----- -----          ----------          --------</code><br />
 <code>100</code></p>
+<blockquote>
 <p><strong>NOTE:</strong> <em>Due to locking incompatibilities, it is <strong>NOT</strong> supported to to use the SMB/CIFS protocol (Windows client) at the same time as another client access method on the same Gluster volume. Doing so will result in data corruption. For the sake of this lab, we do this only to illustrate Gluster’s functionality.</em></p>
+</blockquote>
 <p>Connect to <em>client1</em> again with your local ssh client.</p>
 <pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
 
