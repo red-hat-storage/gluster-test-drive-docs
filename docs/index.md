@@ -38,7 +38,7 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
    ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png)
 
-<ol start="3"><li>The <b>Connect</b> panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily.</li></ol>
+<ol start="3"><li>The <strong>Connect</strong> panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily.</li></ol>
 
 > **Tip** If the **Connect** tab is unavailable, make sure you click **Start Lab** at the top of your screen.
 
