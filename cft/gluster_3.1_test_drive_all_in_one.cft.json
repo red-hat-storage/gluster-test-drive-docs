@@ -1564,7 +1564,8 @@
               "packages": {
                 "yum": {
                   "ntp" : [],
-                  "sshd" : []
+                  "sshd" : [],
+                  "nfs-utils-1.3.0-0.21.el7" : []
                 }
               }
             }
@@ -1607,7 +1608,7 @@
               "10.100.0.102 client2 client2.gluster.lab\n",
               "10.100.0.103 winclient winclient.gluster.lab\n",
               "EOF\n",
-              "yum -y install glusterfs-fuse-3.7.9-12.el7 nfs-utils-1.3.0-0.21.el7\n",
+              "yum -y install glusterfs-fuse-3.7.9-12.el7\n",
               "cat << EOF | tee -a /home/gluster/.ssh/id_rsa\n",
               "-----BEGIN RSA PRIVATE KEY-----\n",
               "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
