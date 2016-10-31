@@ -151,41 +151,61 @@
 </ul>
 <h2 id="creating-the-trusted-pool">Creating the Trusted Pool<a class="headerlink" href="#creating-the-trusted-pool" title="Permanent link">&para;</a></h2>
 <p>Connect to the <strong>rhgs1</strong> server instance using its public IP address from the <strong>Addl. Info</strong> tab (Linux/Mac example below).</p>
-<pre class="codehilite"><code class="language-bash">ssh -i &lt;path-to-pem&gt; ec2-user@&lt;public_ip&gt;</code></pre>
+<pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
 
-<p>The first step in creating a Gluster trusted pool is node peering. From one node, all of the other nodes should be peered using the gluster CLI. As our lab only has two nodes, you only need to run one peer probe command from node <strong>rhgs1</strong>. Run the below command to probe the peer.</p>
-<pre class="codehilite"><code class="language-bash">sudo gluster peer probe rhgs2</code></pre>
+<p>The first step in creating a Gluster trusted pool is node peering. From one node, all of the other nodes should be peered using the gluster CLI. Our lab has 6 Gluster nodes in the local subnet. You will run <code>peer probe</code> commands from only node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster peer probe rhgs2
+sudo gluster peer probe rhgs3
+sudo gluster peer probe rhgs4
+sudo gluster peer probe rhgs5
+sudo gluster peer probe rhgs6</code></pre>
 
 
-<p>Note the success Message:</p>
+<p>Note the success Messages:</p>
 <p><code>peer probe: success.</code></p>
 <p>A <em>trusted pool</em> is defined as a group of Gluster nodes peered together for the purpose of sharing their local storage and compute resources for one or more logical filesystem namespaces. The state of a trusted pool and its members can be viewed with two important commands: <code>gluster peer status</code> and <code>gluster pool list</code>.</p>
 <pre class="codehilite"><code class="language-bash">sudo gluster peer status</code></pre>
 
 
 <p>Note the <code>peer status</code> command only reports the remote peers of the local node from which the command is run, excluding itself (localhost) from the list. This can be confusing for first-time users.</p>
-<p><code>Number of Peers: 1</code></p>
+<p><code>Number of Peers: 5</code></p>
 <p><code>Hostname: rhgs2</code><br />
-<code>Uuid: 15a57a7f-b895-4b5c-8031-943bd8bcb0d1</code><br />
+<code>Uuid: 64edb288-524e-4918-b421-74b76b80a44b</code><br />
+<code>State: Peer in Cluster (Connected)</code></p>
+<p><code>Hostname: rhgs3</code><br />
+<code>Uuid: e22261c4-3e34-49e3-b4e3-da9a8c449471</code><br />
+<code>State: Peer in Cluster (Connected)</code></p>
+<p><code>Hostname: rhgs4</code><br />
+<code>Uuid: fbd4ab10-f50b-4ca8-b973-a9a54dfed47d</code><br />
+<code>State: Peer in Cluster (Connected)</code></p>
+<p><code>Hostname: rhgs5</code><br />
+<code>Uuid: c351dead-7326-4370-a6fe-90d7b5ac8b45</code><br />
+<code>State: Peer in Cluster (Connected)</code></p>
+<p><code>Hostname: rhgs6</code><br />
+<code>Uuid: 8b8384ae-cc6e-4403-ab3b-b7cc3c21029f</code><br />
 <code>State: Peer in Cluster (Connected)</code></p>
 <p>The <code>pool list</code> command provides similar output in a tabular format and includes the local node, thus giving a complete view of the Gluster trusted pool.</p>
 <pre class="codehilite"><code class="language-bash">sudo gluster pool list</code></pre>
 
 
 <p><code>UUID                  Hostname    State</code><br />
-<code>15a57a7f-b895-4b5c-8031-943bd8bcb0d1  rhgs2       Connected</code><br />
-<code>da4fe9c8-596a-4a13-9f49-f7fa057879d6  localhost   Connected</code></p>
+<code>64edb288-524e-4918-b421-74b76b80a44b  rhgs2       Connected</code><br />
+<code>e22261c4-3e34-49e3-b4e3-da9a8c449471  rhgs3       Connected</code><br />
+<code>fbd4ab10-f50b-4ca8-b973-a9a54dfed47d  rhgs4       Connected</code><br />
+<code>c351dead-7326-4370-a6fe-90d7b5ac8b45  rhgs5       Connected</code><br />
+<code>8b8384ae-cc6e-4403-ab3b-b7cc3c21029f  rhgs6       Connected</code><br />
+<code>c0f78e93-ad8f-4849-b8f3-ebdb2f7f4d17  localhost   Connected</code></p>
 <h2 id="creating-a-distributed-volume">Creating a Distributed Volume<a class="headerlink" href="#creating-a-distributed-volume" title="Permanent link">&para;</a></h2>
 <p>A unit of storage on a node is referred to as a <em>brick</em>. A brick is simply a local filesystem that has been presented to the Gluster system for consumption. Each brick has an associated <code>glusterfsd</code> process on its system.</p>
 <p>When a Gluster volume is created, its default architecture is <em>distribution</em>. A distributed volume simply groups storage from different bricks together into one unified namespace, resulting in a Gluster volume as large as the sum of all of the bricks. This architecture uses a hashing algorithm for pseudo-random distribution of files across the the bricks, resulting in statistically even distribution of files across the bricks.</p>
-<p>We will use the gluster CLI to create a 2-brick distributed volume named <em>distvol</em>. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to <code>/rhgs/brick_vdb</code>. You can view the LVM and filesystem configurations with the commands below.</p>
-<pre class="codehilite"><code class="language-bash">sudo vgdisplay -v /dev/rhgs_vg</code></pre>
+<p>We will use the gluster CLI to create a 2-brick distributed volume named <em>distvol</em>. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to <code>/rhgs/brick_xvdb</code>. You can view the LVM and filesystem configurations with the commands below.</p>
+<pre class="codehilite"><code class="language-bash">sudo vgdisplay -v /dev/rhgs_vg1</code></pre>
 
 
 <p><code>Using volume group(s) on command line.</code><br />
 <code>--- Volume group ---</code><br />
-<code>VG Name               rhgs_vg</code><br />
+<code>VG Name               rhgs_vg1</code><br />
 <code>System ID</code><br />
 <code>Format                lvm2</code><br />
 <code>Metadata Areas        1</code><br />
@@ -205,13 +225,13 @@
 <code>Free  PE / Size       0 / 0</code><br />
 <code>VG UUID               sHGNaI-ODzz-aZV3-j602-aDZQ-DUUU-ddbK7X</code></p>
 <p><code>--- Logical volume ---</code><br />
-<code>LV Name                rhgs_thinpool</code><br />
-<code>VG Name                rhgs_vg</code><br />
+<code>LV Name                rhgs_thinpool1</code><br />
+<code>VG Name                rhgs_vg1</code><br />
 <code>LV UUID                A3FlQv-X8K7-IQE0-cYUZ-eEJk-ROVe-hkboxV</code><br />
 <code>LV Write Access        read/write</code><br />
-<code>LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:26 -0400</code><br />
-<code>LV Pool metadata       rhgs_thinpool_tmeta</code><br />
-<code>LV Pool data           rhgs_thinpool_tdata</code><br />
+<code>LV Creation host, time rhgs1.gluster.lab, 2016-07-27 10:56:26 -0400</code><br />
+<code>LV Pool metadata       rhgs_thinpool1_tmeta</code><br />
+<code>LV Pool data           rhgs_thinpool1_tdata</code><br />
 <code>LV Status              available</code><br />
 <code># open                 2</code><br />
 <code>LV Size                9.97 GiB</code><br />
@@ -224,13 +244,13 @@
 <code>- currently set to     8192</code><br />
 <code>Block device           253:2</code></p>
 <p><code>--- Logical volume ---</code><br />
-<code>LV Path                /dev/rhgs_vg/rhgs_lv</code><br />
-<code>LV Name                rhgs_lv</code><br />
-<code>VG Name                rhgs_vg</code><br />
+<code>LV Path                /dev/rhgs_vg1/rhgs_lv1</code><br />
+<code>LV Name                rhgs_lv1</code><br />
+<code>VG Name                rhgs_vg1</code><br />
 <code>LV UUID                L2f6yD-NhfH-2Mm7-gX5S-b8Ee-2dXL-Pb0HGK</code><br />
 <code>LV Write Access        read/write</code><br />
-<code>LV Creation host, time ip-172-31-2-112.ec2.internal, 2016-07-27 10:56:49 -0400</code><br />
-<code>LV Pool name           rhgs_thinpool</code><br />
+<code>LV Creation host, time rhgs1.gluster.lab, 2016-07-27 10:56:49 -0400</code><br />
+<code>LV Pool name           rhgs_thinpool1</code><br />
 <code>LV Status              available</code><br />
 <code># open                 1</code><br />
 <code>LV Size                10.00 GiB</code><br />
@@ -246,13 +266,19 @@
 <code>PV UUID               OmPpve-V6qZ-fcvx-DFMq-nrPr-Aeoh-0X2FFg</code><br />
 <code>PV Status             allocatable</code><br />
 <code>Total PE / Free PE    2559 / 0</code></p>
-<pre class="codehilite"><code class="language-bash">sudo df -h /rhgs/brick_vdb</code></pre>
+<pre class="codehilite"><code class="language-bash">sudo df -h /rhgs/brick_xvdb</code></pre>
 
 
-<p><code>Filesystem                   Size  Used Avail Use% Mounted on</code><br />
-<code>/dev/mapper/rhgs_vg-rhgs_lv   10G   33M   10G   1% /rhgs/brick_vdb</code></p>
+<p><code>Filesystem                     Size  Used Avail Use% Mounted on</code><br />
+<code>/dev/mapper/rhgs_vg1-rhgs_lv1   10G   33M   10G   1% /rhgs/brick_xvdb</code></p>
 <p>Now create the 2-brick <em>distvol</em> Gluster volume.</p>
-<pre class="codehilite"><code class="language-bash">sudo gluster volume create distvol rhgs1:/rhgs/brick_vdb/distvol rhgs2:/rhgs/brick_vdb/distvol</code></pre>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume create distvol \
+rhgs1:/rhgs/brick_xvdb/distvol \
+rhgs2:/rhgs/brick_xvdb/distvol \
+rhgs3:/rhgs/brick_xvdb/distvol \
+rhgs4:/rhgs/brick_xvdb/distvol \
+rhgs5:/rhgs/brick_xvdb/distvol \
+rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 
 
 <p>Note the output, volume created successfuly and we have to start the volume:</p>
@@ -265,42 +291,34 @@
 <h2 id="automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume<a class="headerlink" href="#automated-creation-of-a-replicate-volume" title="Permanent link">&para;</a></h2>
 <p>Gluster volume configurations can become much more complicated than the basic example above as the scale grows and additional features are leveraged. In order to simplify and automate the deployment process, Red Hat has introduced an <strong>Ansible</strong>-based deployment tool called <strong>gdeploy</strong>. With gdeploy, an end-to-end Gluster architecture can be defined in a configuration file, and the entire deployment can be executed with a single command.</p>
 <p>We will now build a <em>replicated</em> volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.</p>
-<p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/vdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the rep01 volume.</p>
+<p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/xvdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the rep01 volume.</p>
 <p>View the gdeploy configuration file with the below command.</p>
-<pre class="codehilite"><code class="language-bash">cat ~/rep01.conf</code></pre>
+<pre class="codehilite"><code class="language-bash">cat ~/repvol.conf</code></pre>
 
 
-<p><code>#</code><br />
-<code># Usage:</code><br />
-<code>#       gdeploy -c rep01.conf</code><br />
-<code>#</code><br />
-<code># This does backend setup first and then create the volume using the</code><br />
-<code># setup bricks.</code><br />
-<code>#</code><br />
-<code>#</code></p>
 <p><code>[hosts]</code><br />
-<code>n1</code><br />
-<code>n2</code></p>
+<code>rhgs1</code><br />
+<code>rhgs2</code></p>
 <p><code># Common backend setup for 2 of the hosts.</code><br />
 <code>[backend-setup]</code><br />
-<code>devices=vdc</code><br />
+<code>devices=xvdc</code><br />
 <code>vgs=rhgs_vg2</code><br />
 <code>pools=rhgs_thinpool2</code><br />
 <code>lvs=rhgs_lv2</code><br />
-<code>mountpoints=/rhgs/brick_vdc</code><br />
-<code>brick_dirs=/rhgs/brick_vdc/rep01</code></p>
+<code>mountpoints=/rhgs/brick_xvdc</code><br />
+<code>brick_dirs=/rhgs/brick_xvdc/repvol</code></p>
 <p><code>[volume]</code><br />
 <code>action=create</code><br />
-<code>volname=rep01</code><br />
+<code>volname=repvol</code><br />
 <code>replica=yes</code><br />
 <code>replica_count=2</code><br />
 <code>force=yes</code></p>
 <p>In order to use <code>gdeploy</code>, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).</p>
-<p><strong>NOTE:</strong> <em>Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the ec2-user user on each node to login as the root user on all nodes using the <code>~/.ssh/id_rsa</code> private key.</em> <strong>The commands below are for reference only and do not need to be run for this lab.</strong></p>
+<p><strong>NOTE:</strong> <em>Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the <code>~/.ssh/id_rsa</code> private key.</em> <strong>The commands below are for reference only and do not need to be run for this lab.</strong></p>
 <p><code>ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''</code><br />
-<code>for i in 1 2; do ssh-copy-id -i ~/.ssh/id_rsa root@n$i; done</code></p>
-<p><em>With passwordless ssh configured, we can deploy the <strong>rep01</strong> volume using the <code>gdeploy</code> command (NOTE because we rely on the ssh keys, we do not need sudo for this command).</em></p>
-<pre class="codehilite"><code class="language-bash">gdeploy -vv -c ~/rep01.conf</code></pre>
+<code>for i in {1..6}; do ssh-copy-id -i ~/.ssh/id_rsa root@rhgs$i; done</code></p>
+<p><em>With passwordless ssh configured, we can deploy the <strong>repvol</strong> volume using the <code>gdeploy</code> command (NOTE because we rely on the ssh keys, we do not need <code>sudo</code> for this command).</em></p>
+<pre class="codehilite"><code class="language-bash">gdeploy -vv -c ~/repvol.conf</code></pre>
 
 
 <h2 id="viewing-volume-details">Viewing Volume Details<a class="headerlink" href="#viewing-volume-details" title="Permanent link">&para;</a></h2>
@@ -311,47 +329,59 @@
 
 <p><code>Volume Name: distvol</code><br />
 <code>Type: Distribute</code><br />
-<code>Volume ID: f53e4874-585a-4b2f-9949-c92ad5bc31b6</code><br />
+<code>Volume ID: 95b1dc7f-277d-47b4-95db-e1981a8f18b9</code><br />
 <code>Status: Started</code><br />
-<code>Number of Bricks: 2</code><br />
+<code>Number of Bricks: 6</code><br />
 <code>Transport-type: tcp</code><br />
 <code>Bricks:</code><br />
-<code>Brick1: rhgs1:/rhgs/brick_vdb/distvol</code><br />
-<code>Brick2: rhgs2:/rhgs/brick_vdb/distvol</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdb/distvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdb/distvol</code><br />
+<code>Brick3: rhgs3:/rhgs/brick_xvdb/distvol</code><br />
+<code>Brick4: rhgs4:/rhgs/brick_xvdb/distvol</code><br />
+<code>Brick5: rhgs5:/rhgs/brick_xvdb/distvol</code><br />
+<code>Brick6: rhgs6:/rhgs/brick_xvdb/distvol</code><br />
 <code>Options Reconfigured:</code><br />
 <code>performance.readdir-ahead: on</code></p>
-<p><code>Volume Name: rep01</code><br />
+<p><code>Volume Name: repvol</code><br />
 <code>Type: Replicate</code><br />
-<code>Volume ID: 8cb60a83-0fec-4698-81fe-0dc2d0820d36</code><br />
+<code>Volume ID: c16eaa3d-7ccc-42ad-bd71-d43bb16229b2</code><br />
 <code>Status: Started</code><br />
 <code>Number of Bricks: 1 x 2 = 2</code><br />
 <code>Transport-type: tcp</code><br />
 <code>Bricks:</code><br />
-<code>Brick1: rhgs1:/rhgs/brick_vdc/rep01</code><br />
-<code>Brick2: rhgs2:/rhgs/brick_vdc/rep01</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdc/repvol</code><br />
 <code>Options Reconfigured:</code><br />
 <code>performance.readdir-ahead: on</code></p>
-<p>The <code>gluster volume status</code> command provides other details about the operational state of volume, including process IDs and TCP ports. Here we view the output for volume <strong>rep01</strong>.</p>
-<pre class="codehilite"><code class="language-bash">sudo gluster volume status rep01</code></pre>
+<p>The <code>gluster volume status</code> command provides other details about the operational state of volume, including process IDs and TCP ports. Here we view the output for volume <strong>repvol</strong>.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume status repvol</code></pre>
 
 
-<p><code>Status of volume: rep01</code><br />
-<code>Gluster process                                TCP Port  RDMA Port  Online  Pid</code><br />
-<code>---------------------------------------------------------------------------------</code><br />
-<code>Brick rhgs1:/rhgs/brick_vdc/rep01              49153     0          Y       4613</code><br />
-<code>Brick rhgs2:/rhgs/brick_vdc/rep01              49153     0          Y       3969</code><br />
-<code>NFS Server on localhost                        2049      0          Y       4635</code><br />
-<code>Self-heal Daemon on localhost                  N/A       N/A        Y       4640</code><br />
-<code>NFS Server on rhgs2                            2049      0          Y       3991</code><br />
-<code>Self-heal Daemon on rhgs2                      N/A       N/A        Y       3996</code></p>
-<p><code>Task Status of Volume rep01</code><br />
-<code>---------------------------------------------------------------------------------</code><br />
+<p><code>Status of volume: repvol</code><br />
+<code>Gluster process                             TCP Port  RDMA Port  Online  Pid</code><br />
+<code>------------------------------------------------------------------------------</code><br />
+<code>Brick rhgs1:/rhgs/brick_xvdc/repvol         49153     0          Y       13363</code><br />
+<code>Brick rhgs2:/rhgs/brick_xvdc/repvol         49153     0          Y       12465</code><br />
+<code>NFS Server on localhost                     2049      0          Y       13385</code><br />
+<code>Self-heal Daemon on localhost               N/A       N/A        Y       13390</code><br />
+<code>NFS Server on rhgs5                         2049      0          Y       11945</code><br />
+<code>Self-heal Daemon on rhgs5                   N/A       N/A        Y       11950</code><br />
+<code>NFS Server on rhgs3                         2049      0          Y       11945</code><br />
+<code>Self-heal Daemon on rhgs3                   N/A       N/A        Y       11950</code><br />
+<code>NFS Server on rhgs2                         2049      0          Y       12487</code><br />
+<code>Self-heal Daemon on rhgs2                   N/A       N/A        Y       12492</code><br />
+<code>NFS Server on rhgs4                         2049      0          Y       11974</code><br />
+<code>Self-heal Daemon on rhgs4                   N/A       N/A        Y       11979</code><br />
+<code>NFS Server on rhgs6                         2049      0          Y       11833</code><br />
+<code>Self-heal Daemon on rhgs6                   N/A       N/A        Y       11838</code><br />
+<code>Task Status of Volume repvol</code><br />
+<code>------------------------------------------------------------------------------</code><br />
 <code>There are no active volume tasks</code></p>
 <h2 id="nfs-client-access">NFS Client Access<a class="headerlink" href="#nfs-client-access" title="Permanent link">&para;</a></h2>
 <p>A Gluster volume can be accessed through multiple standard client protocols, as well as through specialized methods including the OpenStack Swift protocol and a direct API.</p>
 <p>For many common use cases, the well-established NFS protocol is used for ease of implementation and compatibility with existing applications and architectures. For some particular use cases, the NFS protocol may also offer a performance benefit over other access methods.</p>
-<p>You can connect to the <strong>client1</strong> system from your local ssh client using the lab PEM file (Linux/Mac example below).</p>
-<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+<p>You can connect to the <strong>client1</strong> system via <code>ssh</code> directly from the rhgs1 system.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
 <p>Here we mount the Gluster distvol volume we created above on a RHEL client.</p>
