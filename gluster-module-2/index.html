@@ -138,8 +138,8 @@
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access">Lab Guide <br/> Gluster Test Drive Module 2 <br/> Volume Setup and Client Access<a class="headerlink" href="#lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access" title="Permanent link">&para;</a></h1>
-<h2 id="lab-agenda">Lab Agenda<a class="headerlink" href="#lab-agenda" title="Permanent link">&para;</a></h2>
+<h1 id="lab-guide-gluster-test-drive-module-2-volume-setup-and-client-access">Lab Guide <br/> Gluster Test Drive Module 2 <br/> Volume Setup and Client Access</h1>
+<h2 id="lab-agenda">Lab Agenda</h2>
 <p>Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab we will:</p>
 <ul>
 <li>Create a Gluster trusted pool</li>
@@ -149,7 +149,7 @@
 <li>Write files to our volumes with the Gluter native client, NFS, and SMB</li>
 <li>Observe the data layout on the Gluster bricks</li>
 </ul>
-<h2 id="creating-the-trusted-pool">Creating the Trusted Pool<a class="headerlink" href="#creating-the-trusted-pool" title="Permanent link">&para;</a></h2>
+<h2 id="creating-the-trusted-pool">Creating the Trusted Pool</h2>
 <p>Connect to the <strong>rhgs1</strong> server instance using its public IP address from the <strong>Addl. Info</strong> tab (Linux/Mac example below).</p>
 <pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
@@ -196,7 +196,7 @@ sudo gluster peer probe rhgs6</code></pre>
 <code>c351dead-7326-4370-a6fe-90d7b5ac8b45  rhgs5       Connected</code><br />
 <code>8b8384ae-cc6e-4403-ab3b-b7cc3c21029f  rhgs6       Connected</code><br />
 <code>c0f78e93-ad8f-4849-b8f3-ebdb2f7f4d17  localhost   Connected</code></p>
-<h2 id="creating-a-distributed-volume">Creating a Distributed Volume<a class="headerlink" href="#creating-a-distributed-volume" title="Permanent link">&para;</a></h2>
+<h2 id="creating-a-distributed-volume">Creating a Distributed Volume</h2>
 <p>A unit of storage on a node is referred to as a <em>brick</em>. A brick is simply a local filesystem that has been presented to the Gluster system for consumption. Each brick has an associated <code>glusterfsd</code> process on its system.</p>
 <p>When a Gluster volume is created, its default architecture is <em>distribution</em>. A distributed volume simply groups storage from different bricks together into one unified namespace, resulting in a Gluster volume as large as the sum of all of the bricks. This architecture uses a hashing algorithm for pseudo-random distribution of files across the the bricks, resulting in statistically even distribution of files across the bricks.</p>
 <p>We will use the gluster CLI to create a 2-brick distributed volume named <em>distvol</em>. Note that for the sake of this lab the backing filesystems on the nodes have been pre-configured and mounted to <code>/rhgs/brick_xvdb</code>. You can view the LVM and filesystem configurations with the commands below.</p>
@@ -288,7 +288,7 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 
 
 <p><code>volume start: distvol: success</code></p>
-<h2 id="automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume<a class="headerlink" href="#automated-creation-of-a-replicate-volume" title="Permanent link">&para;</a></h2>
+<h2 id="automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume</h2>
 <p>Gluster volume configurations can become much more complicated than the basic example above as the scale grows and additional features are leveraged. In order to simplify and automate the deployment process, Red Hat has introduced an <strong>Ansible</strong>-based deployment tool called <strong>gdeploy</strong>. With gdeploy, an end-to-end Gluster architecture can be defined in a configuration file, and the entire deployment can be executed with a single command.</p>
 <p>We will now build a <em>replicated</em> volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.</p>
 <p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/xvdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the repvol volume.</p>
@@ -321,7 +321,7 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 <pre class="codehilite"><code class="language-bash">gdeploy -vv -c ~/repvol.conf</code></pre>
 
 
-<h2 id="viewing-volume-details">Viewing Volume Details<a class="headerlink" href="#viewing-volume-details" title="Permanent link">&para;</a></h2>
+<h2 id="viewing-volume-details">Viewing Volume Details</h2>
 <p>Information about Gluster volumes, including their architecture, configuration specifics, processes, and ports can be viewed with the below two commands.</p>
 <p>The <code>gluster volume info</code> command shows configuration and operational details about your Gluster volumes. You can also pass a specific volume name at the end of the command to show output for only one volume.</p>
 <pre class="codehilite"><code class="language-bash">sudo gluster volume info</code></pre>
@@ -377,7 +377,7 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 <code>Task Status of Volume repvol</code><br />
 <code>------------------------------------------------------------------------------</code><br />
 <code>There are no active volume tasks</code></p>
-<h2 id="nfs-client-access">NFS Client Access<a class="headerlink" href="#nfs-client-access" title="Permanent link">&para;</a></h2>
+<h2 id="nfs-client-access">NFS Client Access</h2>
 <p>A Gluster volume can be accessed through multiple standard client protocols, as well as through specialized methods including the OpenStack Swift protocol and a direct API.</p>
 <p>For many common use cases, the well-established NFS protocol is used for ease of implementation and compatibility with existing applications and architectures. For some particular use cases, the NFS protocol may also offer a performance benefit over other access methods.</p>
 <p>You can connect to the <strong>client1</strong> system via <code>ssh</code> directly from the rhgs1 system.</p>
@@ -415,7 +415,7 @@ sudo chmod 777 /rhgs/client/nfs/distvol/mydir</code></pre>
 
 
 <p><code>100</code></p>
-<h2 id="native-client-access">Native Client Access<a class="headerlink" href="#native-client-access" title="Permanent link">&para;</a></h2>
+<h2 id="native-client-access">Native Client Access</h2>
 <p>The Gluster native client utilizes <em>Filesystem in Userspace (FUSE)</em> technology to implement a client access protocol that is POSIX-compatible and has the distinct advantage that the client is fully aware of the Gluster volume architecture. This means that with a redundant volume architecture (replicate or disperse), the client automatically has <em>highly-available</em> access to the Gluster volume data without any special configuration.</p>
 <p>Additionally, the native client can benefit from multiple data paths and specific protocol tunings, allowing for greater overall throughput and lower latency under most workloads.</p>
 <p>Here on the same client we mount the Gluster <strong>distvol</strong> volume a second time, this time using the Gluster native client.</p>
@@ -453,7 +453,7 @@ sudo mount -t glusterfs rhgs1:distvol /rhgs/client/native/distvol/</code></pre>
 
 
 <p><code>200</code></p>
-<h2 id="windows-client-access">Windows Client Access<a class="headerlink" href="#windows-client-access" title="Permanent link">&para;</a></h2>
+<h2 id="windows-client-access">Windows Client Access</h2>
 <p>In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the <strong>rhgs1</strong> node from your local ssh client. (NOTE - After following the above instructions, you may simply type <code>exit</code> to return to <strong>rhgs1</strong>)</p>
 <pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
@@ -517,7 +517,7 @@ sudo mount -t glusterfs rhgs1:repvol /rhgs/client/native/repvol</code></pre>
 
 
 <p><code>100</code></p>
-<h2 id="analysis-of-volume-types">Analysis of Volume Types<a class="headerlink" href="#analysis-of-volume-types" title="Permanent link">&para;</a></h2>
+<h2 id="analysis-of-volume-types">Analysis of Volume Types</h2>
 <p>Connect to <strong>rhgs1</strong> again with your local ssh client.</p>
 <pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
@@ -550,7 +550,7 @@ sudo mount -t glusterfs rhgs1:repvol /rhgs/client/native/repvol</code></pre>
 
 
 <p><code>100</code></p>
-<h1 id="end-your-lab">End Your Lab<a class="headerlink" href="#end-your-lab" title="Permanent link">&para;</a></h1>
+<h1 id="end-your-lab">End Your Lab</h1>
 <p>This concludes Gluster Test Drive Module 2 - Volume Setup and Client Access. Please follow these steps to end your lab and evaluate the experience.</p>
 <ol>
 <li>[1] Close your remote sessions.</li>
@@ -558,7 +558,7 @@ sudo mount -t glusterfs rhgs1:repvol /rhgs/client/native/repvol</code></pre>
 <li>In the confirmation message, click <strong>OK</strong>.</li>
 <li>(Optional) Tell us about your lab experience!</li>
 </ol>
-<h1 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h1>
+<h1 id="additional-resources">Additional Resources</h1>
 <ul>
 <li>https://www.redhat.com/en/technologies/storage/gluster</li>
 </ul></div>
