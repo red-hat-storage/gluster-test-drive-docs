@@ -111,7 +111,7 @@
         
             <li><a href="#what-is-gluster">What is Gluster?</a></li>
         
-            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#test-drive-prerequisites">Test-Drive Prerequisites</a></li>
         
             <li><a href="#getting-to-know-your-lab-environment">Getting to know your lab environment</a></li>
         
@@ -123,23 +123,25 @@
             <div class="col-md-9" role="main">
 
 <h1 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h1>
-<p>Welcome to the Red Hat Gluster Storage Hands-on Lab. To make your Gluster experience awesome, the contents of this test drive have been divided into following modules.</p>
+<p>Welcome to the <strong>Red Hat Gluster Storage</strong> Hands-on Test Drive. To make your Gluster experience awesome, the contents of this test drive have been divided into following modules.</p>
 <ul>
 <li><a href="gluster-module-1/"><strong>Module 1 :</strong> Introduction to Gluster concepts</a></li>
 <li><a href="gluster-module-2/"><strong>Module 2 :</strong> Volume Setup and Client Access</a></li>
-<li><strong>Module 3 :</strong> Volume Operations and Administration</li>
-<li><strong>Module 4 :</strong> Disperse Volumes (Erasure Coding)</li>
-<li><strong>Module 5 :</strong> Tiered Volumes (Cache Tiering)</li>
-<li><strong>Module 6 :</strong> Gluster Internals</li>
+<li><strong><em>Coming Soon</em></strong> <strong>Module 3 :</strong> Volume Operations and Administration</li>
+<li><strong><em>Coming Soon</em></strong> <strong>Module 4 :</strong> Disperse Volumes (Erasure Coding)</li>
+<li><strong><em>Coming Soon</em></strong> <strong>Module 5 :</strong> Tiered Volumes (Cache Tiering)</li>
+<li><strong><em>Coming Soon</em></strong> <strong>Module 6 :</strong> Gluster Internals</li>
 </ul>
 <h2 id="what-is-gluster">What is Gluster?<a class="headerlink" href="#what-is-gluster" title="Permanent link">&para;</a></h2>
-<p>Gluster provides a scalable, reliable, and cost-effective data management platform, streamlining file and object access across physical, virtual, and cloud environments. You can read more about gluster here https://www.redhat.com/en/technologies/storage</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>If you are a Windows user, you will need a Secure Shell client like PuTTY to connect to your instance. If you do not have it already, you can download the PuTTY client here: http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe</p>
-<p>Mac and Linux users, you will use your preferred terminal application to connect to EC2 (this should already be installed on your machine). For accessing the Windows system interface via RDP, you will need a RDP client program such as <em>Vinagre</em> on Linux or the <em>Microsoft Remote Desktop</em> client for Mac. Vinagre is likely available for your Linux distribution using your standard package manager. You can download the Mac RDP client here: https://www.microsoft.com/en-us/download/details.aspx?id=18140</p>
+<p>Gluster provides open, software-defined file storage that scales out as much as you need. You can easily and securely manage large, unstructured, and semi-structured data at a fraction of the cost of traditional, monolithic storage. And only Red Hat lets you deploy the same storage on premise; in private, public, or hybrid clouds; and in Linux® containers. You can read more about gluster here: <a href="https://www.redhat.com/en/technologies/storage/gluster">https://www.redhat.com/en/technologies/storage/gluster</a></p>
+<h2 id="test-drive-prerequisites">Test-Drive Prerequisites<a class="headerlink" href="#test-drive-prerequisites" title="Permanent link">&para;</a></h2>
+<p>If you are a Windows user, you will need a Secure Shell client like <em>PuTTY</em> to connect to your instance. If you do not have it already, you can download the PuTTY client here: <a href="http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe">http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe</a></p>
+<p>Mac and Linux users, you will use your preferred terminal application (this should already be installed on your machine). For accessing the Windows lab client system interface via RDP, you will need a RDP client program such as <em>Vinagre</em> on Linux or the <em>Microsoft Remote Desktop</em> client for Mac. Vinagre is likely available for your Linux distribution using your standard package manager. You can download the Mac RDP client here: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=18140">https://www.microsoft.com/en-us/download/details.aspx?id=18140</a></p>
 <h2 id="getting-to-know-your-lab-environment">Getting to know your lab environment<a class="headerlink" href="#getting-to-know-your-lab-environment" title="Permanent link">&para;</a></h2>
 <h3 id="starting-the-lab">Starting the lab<a class="headerlink" href="#starting-the-lab" title="Permanent link">&para;</a></h3>
-<p>On the <strong>Lab Details</strong> tab, notice the lab properties:</p>
+<ol>
+<li>On the <strong>Lab Details</strong> tab to the right, notice the lab properties:</li>
+</ol>
 <p><img alt="" src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image004.png" /></p>
 <ul>
 <li><strong>Setup Time -</strong> The estimated time for the lab to start your instance so you can access the lab environment.</li>
@@ -147,77 +149,20 @@
 <li><strong>Access -</strong> The time the lab will run before automatically shutting down.</li>
 </ul>
 <ol>
-<li>Click <strong>Start Lab</strong> to launch your <em>qwik</em>LABS. If you are prompted for a token, use the one distributed to you (or credits you&rsquo;ve purchased).</li>
+<li>Click the <img alt="" src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png" /> button in the navigation bar above to launch your <em>qwik</em>LABS. If you are prompted for a token, use the one distributed to you (or credits you&rsquo;ve purchased).</li>
 </ol>
-<p><img alt="" src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png" /></p>
-<p>A status bar shows the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.</p>
+<p>A status bar will then show the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.</p>
 <p><img alt="" src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png" /></p>
 <ol>
-<li>[2] The <strong>Connect</strong> panel is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily. </li>
+<li>The <strong>Connect</strong> panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily. </li>
 </ol>
+<blockquote>
 <p><strong>Tip</strong> If the <strong>Connect</strong> tab is unavailable, make sure you click <strong>Start Lab</strong> at the top of your screen.</p>
+</blockquote>
 <h2 id="accessing-the-lab">Accessing the lab<a class="headerlink" href="#accessing-the-lab" title="Permanent link">&para;</a></h2>
-<p>Windows users, please proceed to the next step. Mac and Linux users, skip to <a href="#maclinux">the next section</a>.</p>
-<p><a name="windows"></a></p>
-<h3 id="windows-users-connecting-to-your-amazon-ec2-linux-instance-via-ssh"><strong>Windows Users</strong>: Connecting to your Amazon EC2 Linux Instance via SSH<a class="headerlink" href="#windows-users-connecting-to-your-amazon-ec2-linux-instance-via-ssh" title="Permanent link">&para;</a></h3>
-<p>This section describes how to use PuTTY Secure Shell (SSH) client to connect to your Linux lab systems. <em>The connection you are making to a lab system under these instructions are for testing purposes only to confirm functionality and is not part of the lab itself.</em></p>
-<p><strong>Note</strong> This section is for Windows users only. If you are running OSX or Linux, please skip to the next section.</p>
-<h4 id="download-your-key">Download your key<a class="headerlink" href="#download-your-key" title="Permanent link">&para;</a></h4>
-<ol>
-<li>[3] On the <em>qwik</em>LABS web page, click the <strong>Addl. Info</strong> tab.</li>
-<li>Copy the <strong>IP address</strong> of the instance to which you are connecting to your clipboard if you have not done so already.</li>
-<li>Under the <strong>Connect</strong> tab, open the <strong>Download PEM/PPK</strong> drop-down list, and click <strong>Download PPK</strong>.</li>
-<li>Save the file to the directory of your choice.</li>
-</ol>
-<h4 id="connect-to-the-server-using-ssh-and-putty">Connect to the server using SSH and PuTTY<a class="headerlink" href="#connect-to-the-server-using-ssh-and-putty" title="Permanent link">&para;</a></h4>
-<ol>
-<li>[7] Open PuTTY.exe. </li>
-</ol>
-<p><strong>Note</strong> If you have not already downloaded PuTTY, you can do so here: http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe)</p>
-<ol>
-<li>[8] For <strong>Host Name</strong>, type <strong>ec2-user@\&lt;public_ip></strong>, where \&lt;public_ip> is the IP address of your lab instance from the <strong>Addl. Info</strong> tab. Your host name should look something like this: <em>ec2-user@54.209.158.243</em>.</li>
-<li>In the <strong>Category</strong> list, click <strong>+</strong> to expand <strong>SSH</strong>.</li>
-<li>Click <strong>Auth</strong> (don&rsquo;t expand it).</li>
-<li>In the <strong>Private key file for authentication</strong> field, browse to the PPK file that you downloaded and double-click it.</li>
-<li>Click <strong>Open</strong>.</li>
-<li>If you are prompted, click <strong>Yes</strong> to allow a first connection to this remote SSH server.</li>
-</ol>
-<p><strong>Note</strong> Because you are using a key pair for authentication, you will not be prompted by the lab system for a password.</p>
-<p>When you see a terminal screen and Linux command line prompt, it means that you are connected to your lab instance. Congratulations! If you know any Linux commands, feel free to explore. </p>
-<h4 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h4>
-<p>If PuTTY fails to connect to your instance, verify that:</p>
-<ul>
-<li>You typed <strong>ec2-user@</strong>\&lt;public_ip> as your Host Name.</li>
-<li>You downloaded the PPK file for this lab from <em>qwik</em>LABS (<strong>not</strong> the PEM file).</li>
-<li>You are using the downloaded PPK file in PuTTY.</li>
-<li>The network you are on allows for outbound TCP connections to destination port 22.</li>
-</ul>
-<p><a name="maclinux"></a></p>
-<h3 id="osx-and-linux-users-connecting-to-your-amazon-ec2-linux-instance-via-ssh"><strong>OSX and Linux Users</strong>: Connecting to your Amazon EC2 Linux Instance via SSH<a class="headerlink" href="#osx-and-linux-users-connecting-to-your-amazon-ec2-linux-instance-via-ssh" title="Permanent link">&para;</a></h3>
-<p><strong>Note</strong> This section is for OSX and Linux users only. If you are running Windows, please see <a href="#windows">the previous section</a>.</p>
-<h4 id="download-your-key_1">Download your key<a class="headerlink" href="#download-your-key_1" title="Permanent link">&para;</a></h4>
-<ol>
-<li>[14] On the <em>qwik</em>LABS page, open the <strong>Addl. Info</strong> tab.</li>
-<li>Copy the <strong>IP address</strong> of the instance to which you are connecting to your clipboard if you have not done so already.</li>
-<li>Under <strong>Connect</strong> tab, open the <strong>Download PEM/PPK</strong> drop-down list, and click <strong>Download PEM</strong>.</li>
-<li>Save the file to the directory of your choice.</li>
-</ol>
-<h4 id="connect-to-the-rhel-instance-using-the-openssh-cli-client">Connect to the RHEL instance using the OpenSSH CLI client<a class="headerlink" href="#connect-to-the-rhel-instance-using-the-openssh-cli-client" title="Permanent link">&para;</a></h4>
-<ol>
-<li>[18] Open your terminal application.</li>
-<li>Enter the following command, substituting <strong>\&lt;path-to-pem></strong> for the path to the key you downloaded: </li>
-</ol>
-<pre class="codehilite"><code class="language-bash">chmod 600 &lt;path-to-pem&gt;</code></pre>
-
-
-<ol>
-<li>[20] Enter the following command. Substitute <strong>\&lt;path-to-pem></strong> for the PEM file you downloaded, and <strong>\&lt;public_ip></strong> for the IP address of your lab instance from the <strong>Addl. Info</strong> tab.</li>
-</ol>
-<pre class="codehilite"><code class="language-bash">ssh -i &lt;path-to-pem&gt; ec2-user@&lt;public_ip&gt;</code></pre>
-
-
-<p><strong>Note</strong> Do not include the &ldquo;\&lt; >&rdquo; brackets in your commands.</p>
-<p>When you see a terminal screen and Linux command line prompt, it means that you are connected to your Linux instance. Congratulations! If you know any Linux commands, feel free to explore.</p></div>
+<p>All of the information you need to access your test drive lab instances is available via the <strong>Addl. Info</strong> tab to the right. There you will find relevant public IP addresses, usernames, and passwords for your personal lab environment.</p>
+<p>All Linux instances may be accessed via your local SSH client.</p>
+<p>All Windows instances may be accessed via your local RDP client. <strong>Windows instances will be logged into with the</strong> <strong><em>Administrator</em></strong> <strong>username and with the password available in the</strong> <strong><em>Addl. Info</em></strong> <strong>tab.</strong></p></div>
         </div>
 
         <footer class="col-md-12">
