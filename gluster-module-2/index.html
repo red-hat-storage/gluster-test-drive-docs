@@ -291,7 +291,7 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 <h2 id="automated-creation-of-a-replicate-volume">Automated Creation of a Replicate Volume<a class="headerlink" href="#automated-creation-of-a-replicate-volume" title="Permanent link">&para;</a></h2>
 <p>Gluster volume configurations can become much more complicated than the basic example above as the scale grows and additional features are leveraged. In order to simplify and automate the deployment process, Red Hat has introduced an <strong>Ansible</strong>-based deployment tool called <strong>gdeploy</strong>. With gdeploy, an end-to-end Gluster architecture can be defined in a configuration file, and the entire deployment can be executed with a single command.</p>
 <p>We will now build a <em>replicated</em> volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.</p>
-<p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/xvdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the rep01 volume.</p>
+<p>For this replicated volume deployment, the backing filesystems have <em>not</em> been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the <code>/dev/xvdc</code> block devices with <em>LVM</em> thin provisioning and format and mount an <em>XFS</em> filesystem. It then further defines the Gluster volume architecture for the repvol volume.</p>
 <p>View the gdeploy configuration file with the below command.</p>
 <pre class="codehilite"><code class="language-bash">cat ~/repvol.conf</code></pre>
 
@@ -396,7 +396,7 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 
 
 <p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
-<code>rhgs1:/distvol      20G   66M   20G   1% /rhgs/client/nfs/distvol</code></p>
+<code>rhgs1:/distvol   60G  198M   60G   1% /rhgs/client/nfs/distvol</code></p>
 <pre class="codehilite"><code class="language-bash">mount | grep distvol</code></pre>
 
 
@@ -428,7 +428,7 @@ sudo mount -t glusterfs rhgs1:distvol /rhgs/client/native/distvol/</code></pre>
 
 
 <p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
-<code>rhgs1:distvol       20G   67M   20G   1% /rhgs/client/native/distvol</code></p>
+<code>rhgs1:distvol    60G  199M   60G   1% /rhgs/client/native/distvol</code></p>
 <p>We can see here that the Gluster volume is <strong>mounted twice by the two different protocols</strong>.</p>
 <pre class="codehilite"><code class="language-bash">mount | grep distvol</code></pre>
 
@@ -454,16 +454,16 @@ sudo mount -t glusterfs rhgs1:distvol /rhgs/client/native/distvol/</code></pre>
 
 <p><code>200</code></p>
 <h2 id="windows-client-access">Windows Client Access<a class="headerlink" href="#windows-client-access" title="Permanent link">&para;</a></h2>
-<p>In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the <strong>rhgs1</strong> node from your local ssh client.</p>
-<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+<p>In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the <strong>rhgs1</strong> node from your local ssh client. (NOTE - After following the above instructions, you may simply type <code>exit</code> to return to <strong>rhgs1</strong>)</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
 
-<p>From node <strong>rhgs1</strong>, run the below commands to modify the <strong>rep01</strong> volume.</p>
-<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 stat-prefetch off</code></pre>
+<p>From node <strong>rhgs1</strong>, run the below commands to modify the <strong>repvol</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set repvol stat-prefetch off</code></pre>
 
 
 <p><code>volume set: success</code></p>
-<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 server.allow-insecure on</code></pre>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set repvol server.allow-insecure on</code></pre>
 
 
 <p><code>volume set: success</code></p>
@@ -471,7 +471,7 @@ sudo mount -t glusterfs rhgs1:distvol /rhgs/client/native/distvol/</code></pre>
 sudo systemctl restart glusterd.service</code></pre>
 
 
-<pre class="codehilite"><code class="language-bash">sudo gluster volume set rep01 storage.batch-fsync-delay-usec 0</code></pre>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set repvol storage.batch-fsync-delay-usec 0</code></pre>
 
 
 <p><code>volume set: success</code></p>
@@ -481,7 +481,7 @@ echo -ne &quot;redhat\nredhat\n&quot; | sudo smbpasswd -s -a samba-user</code></
 
 <p><code>Added user samba-user.</code></p>
 <p>Here we temporarily mount the client interface on the rhgs1 server in order to create a directory for our Windows client to write to.</p>
-<pre class="codehilite"><code class="language-bash">sudo mount -t glusterfs rhgs1:rep01 /mnt
+<pre class="codehilite"><code class="language-bash">sudo mount -t glusterfs rhgs1:repvol /mnt
 sudo mkdir /mnt/mysmbdir
 sudo chmod 777 /mnt/mysmbdir
 sudo umount /mnt</code></pre>
@@ -489,7 +489,7 @@ sudo umount /mnt</code></pre>
 
 <p>Using your local RDP client, connect to the public IP address of the Windows client system. The username is <strong>Administrator</strong> and the password is <strong>RedHat1</strong>. You can leave the domain field blank.</p>
 <p>Using Windows PowerShell, we mount the Gluster volume to the Z: drive.</p>
-<pre class="codehilite"><code>net use Z: \\10.100.1.11\gluster-rep01 redhat /USER:samba-user</code></pre>
+<pre class="codehilite"><code>net use Z: \\10.100.1.11\gluster-repvol redhat /USER:samba-user</code></pre>
 
 
 <p>We create 100 new files in the mysmbdir subdirectory.</p>
@@ -508,43 +508,45 @@ sudo umount /mnt</code></pre>
 <pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
 
 
-<p>From here, you can mount the <strong>rep01</strong> volume and see the 100 new files added from the Windows client are visible.</p>
-<pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/native/rep01
-sudo mount -t glusterfs rhgs1:rep01 /rhgs/client/native/rep01</code></pre>
+<p>From here, you can mount the <strong>repvol</strong> volume and see the 100 new files added from the Windows client are visible.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/native/repvol
+sudo mount -t glusterfs rhgs1:repvol /rhgs/client/native/repvol</code></pre>
 
 
-<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/rep01/mysmbdir | wc -l</code></pre>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/repvol/mysmbdir | wc -l</code></pre>
 
 
 <p><code>100</code></p>
 <h2 id="analysis-of-volume-types">Analysis of Volume Types<a class="headerlink" href="#analysis-of-volume-types" title="Permanent link">&para;</a></h2>
 <p>Connect to <strong>rhgs1</strong> again with your local ssh client.</p>
-<pre class="codehilite"><code class="language-bash">ssh -i &lt;PEM_FILE&gt; ec2-user@&lt;PUBLIC_IP&gt;</code></pre>
+<pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
 
-<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs1</strong>, we can see that only a subset of the 200 files that were created are present on this brick. (Note the numbers you see may be different than the examples below.)</p>
-<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdb/distvol/mydir/ | wc -l</code></pre>
+<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs1</strong>, we can see that only a subset of the 200 files that were created are present on this brick. (Note the exact files you see may be different than the examples below.)</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdb/distvol/mydir/</code></pre>
 
 
-<p><code>95</code></p>
-<p>Now connect to <strong>rhgs2</strong> &ndash; As a convenience, you can do this most simply directly from node rhgs1 (you will need to connect at the root user).</p>
-<pre class="codehilite"><code class="language-bash">ssh root@rhgs2</code></pre>
+<p><code>file006  file018  file033  file036  file044  file073  file078  file088  file096  file113  file120  file143  file158  file167  file176  file185  file191  file197</code><br />
+<code>file015  file026  file034  file042  file050  file076  file081  file093  file097  file115  file130  file157  file164  file168  file179  file190  file193</code></p>
+<p>Now connect to <strong>rhgs2</strong> &ndash; As a convenience, you can do this directly from node rhgs1.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@rhgs2</code></pre>
 
 
-<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs2</strong>, we can see that the <em>remainder of the 200 files are located on this brick</em>.</p>
-<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdb/distvol/mydir/ | wc -l</code></pre>
+<p>Looking at the brick backend for the <strong>distvol</strong> volume on Gluster node <strong>rhgs2</strong>, we can see that <em>a different portion of the 200 files are located on this brick</em>.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdb/distvol/mydir/</code></pre>
 
 
-<p><code>105</code></p>
+<p><code>file003  file013  file017  file030  file040  file053  file085  file095  file109  file119  file127  file133  file145  file166  file180  file195</code><br />
+<code>file007  file014  file025  file032  file046  file061  file090  file106  file111  file126  file129  file139  file163  file169  file182</code></p>
 <p>This is the natural effect of the <em>Distributed Hash Algorithm</em>. Given the bricks in a distribute volume, the files will be pseudo-randomly placed among those bricks in a statistically even pattern.</p>
-<p>While still on node <strong>rhgs2</strong>, take a look at the files in the brick backend for the <strong>rep01</strong> volume.</p>
-<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l</code></pre>
+<p>While still on node <strong>rhgs2</strong>, take a look at the count of files in the brick backend for the <strong>repvol</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mysmbdir/ | wc -l</code></pre>
 
 
 <p><code>100</code></p>
 <p>Above we created 100 files in this directory from the Windows client, and this time we see <em>exactly 100 files on the brick backend</em>. This is the effect of the <em>Automatic File Replication</em>, which synchronously places copies of the files written by the clients on the replica peer bricks.</p>
-<p>Exit from node <strong>rhgs2</strong> (simply type exit at the command line), returning to node <strong>rhgs1</strong>. Look at the <strong>rep01</strong> brick backend on this node and confirm that the file count matches that of node rhgs2.</p>
-<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l</code></pre>
+<p>Exit from node <strong>rhgs2</strong> (simply type exit at the command line), returning to node <strong>rhgs1</strong>. Look at the <strong>repvol</strong> brick backend on this node and confirm that the file count matches that of node rhgs2.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mysmbdir/ | wc -l</code></pre>
 
 
 <p><code>100</code></p>
