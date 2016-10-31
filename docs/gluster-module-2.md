@@ -229,7 +229,7 @@ cat ~/repvol.conf
 
 In order to use `gdeploy`, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).
 
-**NOTE:** *Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
+> **NOTE:** *Amazon AWS by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
 
 ``ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''``
 ``for i in {1..6}; do ssh-copy-id -i ~/.ssh/id_rsa root@rhgs$i; done``
@@ -511,7 +511,7 @@ dir Z:\mysmbdir | measure-object -line
 ``        100``
 
 
-**NOTE:** *Due to locking incompatibilities, it is **NOT** supported to to use the SMB/CIFS protocol (Windows client) at the same time as another client access method on the same Gluster volume. Doing so will result in data corruption. For the sake of this lab, we do this only to illustrate Gluster’s functionality.*
+> **NOTE:** *Due to locking incompatibilities, it is **NOT** supported to to use the SMB/CIFS protocol (Windows client) at the same time as another client access method on the same Gluster volume. Doing so will result in data corruption. For the sake of this lab, we do this only to illustrate Gluster’s functionality.*
 
 Connect to *client1* again with your local ssh client.
 
