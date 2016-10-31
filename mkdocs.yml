@@ -2,8 +2,7 @@ site_name: RHGS Test Drive Instructions
 site_favicon: images/favicon.ico
 markdown_extensions:
     - smarty
-    - toc:
-        permalink: True
+    - toc
     - sane_lists
     - footnotes
     - smart_strong
