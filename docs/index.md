@@ -15,6 +15,7 @@ Gluster provides open, software-defined file storage that scales out as much as 
 
 ## Test-Drive Prerequisites
 
+### SSH and RDP
 If you are a Windows user, you will need a Secure Shell client like *PuTTY* to connect to your instance. If you do not have it already, you can download the PuTTY client here: <http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe>
 
 Mac and Linux users, you will use your preferred terminal application (this should already be installed on your machine). For accessing the Windows lab client system interface via RDP, you will need a RDP client program such as *Vinagre* on Linux or the *Microsoft Remote Desktop* client for Mac. Vinagre is likely available for your Linux distribution using your standard package manager. You can download the Mac RDP client here: <https://www.microsoft.com/en-us/download/details.aspx?id=18140>
@@ -25,18 +26,17 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
 1. On the **Lab Details** tab to the right, notice the lab properties:
 
-![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image004.png)
+   ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image004.png)
 
-- **Setup Time -** The estimated time for the lab to start your instance so you can access the lab environment.
-- **Duration -** The estimated time the lab should take to complete.
-- **Access -** The time the lab will run before automatically shutting down.
+   - **Setup Time -** The estimated time for the lab to start your instance so you can access the lab environment.
+   - **Duration -** The estimated time the lab should take to complete.
+   - **Access -** The time the lab will run before automatically shutting down.
 
 2. Click the ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png) button in the navigation bar above to launch your *qwik*LABS. If you are prompted for a token, use the one distributed to you (or credits you've purchased).
 
+   A status bar will then show the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.
 
-A status bar will then show the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.
-
-![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png)
+   ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png)
 
 3. The **Connect** panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily. 
 
