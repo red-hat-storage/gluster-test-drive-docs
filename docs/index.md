@@ -32,13 +32,13 @@ Mac and Linux users, you will use your preferred terminal application (this shou
    - **Duration -** The estimated time the lab should take to complete.
    - **Access -** The time the lab will run before automatically shutting down.
 
-2. Click the ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png) button in the navigation bar above to launch your *qwik*LABS. If you are prompted for a token, use the one distributed to you (or credits you've purchased).
+<ol start="2"><li>Click the ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png) button in the navigation bar above to launch your *qwik*LABS. If you are prompted for a token, use the one distributed to you (or credits you've purchased).</li></ol>
 
    A status bar will then show the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.
 
    ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png)
 
-3. The **Connect** panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily. 
+<ol start="3"><li>The **Connect** panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily.</li></ol>
 
 > **Tip** If the **Connect** tab is unavailable, make sure you click **Start Lab** at the top of your screen.
 
