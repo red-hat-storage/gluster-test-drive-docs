@@ -92,6 +92,16 @@
       "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
     },
 
+    "WINCLIENTAMI" : {
+      "us-east-1"      : { "AMI" : "ami-9f226c88" },
+      "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
+      "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "ap-southeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "ap-northeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
+    },
+
 
     "SubnetConfig" : {
       "VPC"     : { "CIDR" : "10.100.0.0/16" },
@@ -583,6 +593,30 @@
         "GroupSet": [{ "Ref" : "RedHatClientSG" }],
         "SubnetId": {"Ref" : "PrivateSubnet1"},
         "PrivateIpAddress": "10.100.1.102"
+      }
+    },
+
+    "PrivateNet1winclient" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for win client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.103"
+      }
+    },
+
+    "PublicNet1winclient" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for win client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.103"
       }
     },
 
@@ -1674,7 +1708,6 @@
             }
           }
         }, 
-      "DependsOn" : "PublicSubnet",
       "Properties" : {
         "InstanceType" : { "Ref" : "RedHatStorageClientInstanceType" },
         "KeyName"  : { "Ref" : "KeyName" },
@@ -1764,6 +1797,25 @@
       }
     },
 
+   "winclient" : {
+      "Type" : "AWS::EC2::Instance",
+      "DependsOn" : "PublicSubnet",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageClientInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "WINCLIENTAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1winclient"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1winclient"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "winclient"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}]
+      }
+   },
+
 
     "rhgs1NodeIPAddress" : {
       "Type" : "AWS::EC2::EIP",
@@ -1778,6 +1830,22 @@
       "Properties": {
         "AllocationId": { "Fn::GetAtt" : [ "rhgs1NodeIPAddress", "AllocationId" ] },
         "NetworkInterfaceId": {"Ref" : "PublicNet1rhgs1"}
+      }
+    },
+
+    "winclientNodeIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["winclient","InternetGateway"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "AssocwinclientNodeIPAddress" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "winclientNodeIPAddress", "AllocationId" ] },
+        "NetworkInterfaceId": {"Ref" : "PublicNet1winclient"}
       }
     },
 
@@ -1832,6 +1900,10 @@
    "rhgs1PublicIP" : {
       "Description" : "rhgs1 Node Public IP Address Username: gluster Password: Redhat16",
       "Value" :  { "Ref" : "rhgs1NodeIPAddress" }
+   },
+   "winclientPublicIP" : {
+      "Description" : "winclient Node Public IP Address",
+      "Value" :  { "Ref" : "winclientNodeIPAddress" }
    },
    "username" : {
       "Description" : "rhgs1 Node Username",
