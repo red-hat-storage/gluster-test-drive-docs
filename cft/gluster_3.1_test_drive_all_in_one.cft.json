@@ -109,7 +109,8 @@
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" }
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "VPC"}
         ]
       }
     },
@@ -124,7 +125,8 @@
         "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" }
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicSubnet"}
         ]
       }
     },
@@ -134,7 +136,8 @@
       "Properties" : {
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" }
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "InternetGateway"}
         ]
       }
     },
@@ -155,7 +158,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" }
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicRouteTable"}
         ]
       }
     },
@@ -186,7 +190,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" }
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicNetworkACL"}
         ]
       }
     },
@@ -237,7 +242,8 @@
         "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private1" }
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateSubnet1"}
         ]
       }
     },
@@ -249,7 +255,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private1" }
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateRouteTable1"}
         ]
       }
     },
@@ -280,7 +287,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private1" }
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateNetworkACL1"}
         ]
       }
     },
@@ -332,7 +340,8 @@
         "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private2" }
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateSubnet2"}
         ]
       }
     },
@@ -344,7 +353,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private2" }
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateRouteTable2"}
         ]
       }
     },
@@ -375,7 +385,8 @@
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
           { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private2" }
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateNetworkACL2"}
         ]
       }
     },
