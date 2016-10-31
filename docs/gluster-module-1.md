@@ -1,4 +1,5 @@
 # Gluster Test Drive Module 1 <br/> Introduction to Gluster Concepts
+Module 1 is an introduction to Gluster and does not include any hands-on work in the lab. When you are ready, please move on to <a href="gluster-module-2/">**Module 2**</a>.
 
 ![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-01.png)
 
