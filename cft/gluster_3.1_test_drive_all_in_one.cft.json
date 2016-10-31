@@ -1782,6 +1782,38 @@
       }
     },
 
+    "client1NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["client1","InternetGateway"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "Assocclient1NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "client1NodeIPAddress", "AllocationId" ] },
+        "NetworkInterfaceId": {"Ref" : "PublicNet1client1"}
+      }
+    },
+
+    "client2NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["client2","InternetGateway"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "Assocclient2NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "client2NodeIPAddress", "AllocationId" ] },
+        "NetworkInterfaceId": {"Ref" : "PublicNet1client2"}
+      }
+    },
+
     "NATSG" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "DependsOn" : "VPC",
