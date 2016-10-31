@@ -198,7 +198,7 @@ Gluster volume configurations can become much more complicated than the basic ex
 
 We will now build a *replicated* volume using the gdeploy method. A replicated volume architecture groups Gluster bricks into replica peers, storing multiple copies of the files as they are being written by the Gluster clients.
 
-For this replicated volume deployment, the backing filesystems have *not* been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the `/dev/xvdc` block devices with *LVM* thin provisioning and format and mount an *XFS* filesystem. It then further defines the Gluster volume architecture for the rep01 volume.
+For this replicated volume deployment, the backing filesystems have *not* been pre-configured as in the above distributed volume example. The provided gdeploy configuration file includes all of the information needed to setup the `/dev/xvdc` block devices with *LVM* thin provisioning and format and mount an *XFS* filesystem. It then further defines the Gluster volume architecture for the repvol volume.
 
 View the gdeploy configuration file with the below command.
 
@@ -336,7 +336,7 @@ df -h /rhgs/client/nfs/distvol
 ```
 
 ``Filesystem      Size  Used Avail Use% Mounted on``
-``rhgs1:/distvol      20G   66M   20G   1% /rhgs/client/nfs/distvol``
+``rhgs1:/distvol   60G  198M   60G   1% /rhgs/client/nfs/distvol``
 
 ```bash
 mount | grep distvol
@@ -390,7 +390,7 @@ df -h /rhgs/client/native/distvol/
 ```
 
 ``Filesystem      Size  Used Avail Use% Mounted on``
-``rhgs1:distvol       20G   67M   20G   1% /rhgs/client/native/distvol``
+``rhgs1:distvol    60G  199M   60G   1% /rhgs/client/native/distvol``
 
 
 We can see here that the Gluster volume is **mounted twice by the two different protocols**.
@@ -435,22 +435,22 @@ ls /rhgs/client/nfs/distvol/mydir/ | wc -l
 
 ## Windows Client Access
 
-In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the **rhgs1** node from your local ssh client.
+In order to make our Gluster volume available to Windows clients, we need to make a few configuration changes. Re-connect to the **rhgs1** node from your local ssh client. (NOTE - After following the above instructions, you may simply type `exit` to return to **rhgs1**)
 
 ```bash
-ssh -i <PEM_FILE> ec2-user@<PUBLIC_IP>
+ssh gluster@<rhgs1PublicIP>
 ```
 
-From node **rhgs1**, run the below commands to modify the **rep01** volume.
+From node **rhgs1**, run the below commands to modify the **repvol** volume.
 
 ```bash
-sudo gluster volume set rep01 stat-prefetch off
+sudo gluster volume set repvol stat-prefetch off
 ```
 
 ``volume set: success``
 
 ```bash
-sudo gluster volume set rep01 server.allow-insecure on
+sudo gluster volume set repvol server.allow-insecure on
 ```
 
 ``volume set: success``
@@ -461,7 +461,7 @@ sudo systemctl restart glusterd.service
 ```
 
 ```bash
-sudo gluster volume set rep01 storage.batch-fsync-delay-usec 0
+sudo gluster volume set repvol storage.batch-fsync-delay-usec 0
 ```
 
 ``volume set: success``
@@ -477,7 +477,7 @@ echo -ne "redhat\nredhat\n" | sudo smbpasswd -s -a samba-user
 Here we temporarily mount the client interface on the rhgs1 server in order to create a directory for our Windows client to write to.
 
 ```bash
-sudo mount -t glusterfs rhgs1:rep01 /mnt
+sudo mount -t glusterfs rhgs1:repvol /mnt
 sudo mkdir /mnt/mysmbdir
 sudo chmod 777 /mnt/mysmbdir
 sudo umount /mnt
@@ -490,7 +490,7 @@ Using your local RDP client, connect to the public IP address of the Windows cli
 Using Windows PowerShell, we mount the Gluster volume to the Z: drive.
 
 ```
-net use Z: \\10.100.1.11\gluster-rep01 redhat /USER:samba-user
+net use Z: \\10.100.1.11\gluster-repvol redhat /USER:samba-user
 ```
 
 We create 100 new files in the mysmbdir subdirectory.
@@ -520,15 +520,15 @@ ssh -i <PEM_FILE> ec2-user@<PUBLIC_IP>
 ```
 
 
-From here, you can mount the **rep01** volume and see the 100 new files added from the Windows client are visible.
+From here, you can mount the **repvol** volume and see the 100 new files added from the Windows client are visible.
 
 ```bash
-sudo mkdir -p /rhgs/client/native/rep01
-sudo mount -t glusterfs rhgs1:rep01 /rhgs/client/native/rep01
+sudo mkdir -p /rhgs/client/native/repvol
+sudo mount -t glusterfs rhgs1:repvol /rhgs/client/native/repvol
 ```
 
 ```bash
-ls /rhgs/client/native/rep01/mysmbdir | wc -l
+ls /rhgs/client/native/repvol/mysmbdir | wc -l
 ```
 
 ``100``
@@ -539,38 +539,40 @@ ls /rhgs/client/native/rep01/mysmbdir | wc -l
 Connect to **rhgs1** again with your local ssh client.
 
 ```bash
-ssh -i <PEM_FILE> ec2-user@<PUBLIC_IP>
+ssh gluster@<rhgs1PublicIP>
 ```
 
-Looking at the brick backend for the **distvol** volume on Gluster node **rhgs1**, we can see that only a subset of the 200 files that were created are present on this brick. (Note the numbers you see may be different than the examples below.)
+Looking at the brick backend for the **distvol** volume on Gluster node **rhgs1**, we can see that only a subset of the 200 files that were created are present on this brick. (Note the exact files you see may be different than the examples below.)
 
 ```bash
-ls /rhgs/brick_vdb/distvol/mydir/ | wc -l
+ls /rhgs/brick_xvdb/distvol/mydir/
 ```
 
-``95``
+``file006  file018  file033  file036  file044  file073  file078  file088  file096  file113  file120  file143  file158  file167  file176  file185  file191  file197``
+``file015  file026  file034  file042  file050  file076  file081  file093  file097  file115  file130  file157  file164  file168  file179  file190  file193``
 
-Now connect to **rhgs2** -- As a convenience, you can do this most simply directly from node rhgs1 (you will need to connect at the root user).
+Now connect to **rhgs2** -- As a convenience, you can do this directly from node rhgs1.
 
 ```bash
-ssh root@rhgs2
+ssh gluster@rhgs2
 ```
 
-Looking at the brick backend for the **distvol** volume on Gluster node **rhgs2**, we can see that the *remainder of the 200 files are located on this brick*.
+Looking at the brick backend for the **distvol** volume on Gluster node **rhgs2**, we can see that *a different portion of the 200 files are located on this brick*.
 
 ```bash
-ls /rhgs/brick_vdb/distvol/mydir/ | wc -l
+ls /rhgs/brick_xvdb/distvol/mydir/
 ```
 
-``105``
+``file003  file013  file017  file030  file040  file053  file085  file095  file109  file119  file127  file133  file145  file166  file180  file195``
+``file007  file014  file025  file032  file046  file061  file090  file106  file111  file126  file129  file139  file163  file169  file182``
 
 
 This is the natural effect of the *Distributed Hash Algorithm*. Given the bricks in a distribute volume, the files will be pseudo-randomly placed among those bricks in a statistically even pattern.
 
-While still on node **rhgs2**, take a look at the files in the brick backend for the **rep01** volume.
+While still on node **rhgs2**, take a look at the count of files in the brick backend for the **repvol** volume.
 
 ```bash
-ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l
+ls /rhgs/brick_xvdc/repvol/mysmbdir/ | wc -l
 ```
 
 ``100``
@@ -578,10 +580,10 @@ ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l
 
 Above we created 100 files in this directory from the Windows client, and this time we see *exactly 100 files on the brick backend*. This is the effect of the *Automatic File Replication*, which synchronously places copies of the files written by the clients on the replica peer bricks.
 
-Exit from node **rhgs2** (simply type exit at the command line), returning to node **rhgs1**. Look at the **rep01** brick backend on this node and confirm that the file count matches that of node rhgs2.
+Exit from node **rhgs2** (simply type exit at the command line), returning to node **rhgs1**. Look at the **repvol** brick backend on this node and confirm that the file count matches that of node rhgs2.
 
 ```bash
-ls /rhgs/brick_vdc/rep01/mysmbdir/ | wc -l
+ls /rhgs/brick_xvdc/repvol/mysmbdir/ | wc -l
 ```
 
 ``100``
