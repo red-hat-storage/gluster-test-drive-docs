@@ -2,7 +2,7 @@
 
 ## Lab Agenda
 
-Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab we will:
+Welcome to the Gluster Test Drive Module 2 - Volume Setup and Client Access. In this lab you will:
 
 - Create a Gluster trusted pool
 - Manually create a Gluster distributed volume
