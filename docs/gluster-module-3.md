@@ -161,7 +161,7 @@ sudo gluster volume heal repvol info
 ``Brick rhgs1:/rhgs/brick_xvdc/repvol``
 ``Status: Transport endpoint is not connected``
 `` ``
-``Brick rhgs2:/rhgs/brick_xvdc/repvol````
+``Brick rhgs2:/rhgs/brick_xvdc/repvol``
 ``/ ``
 ``/mydir ``
 ``/mydir/healme001 ``
