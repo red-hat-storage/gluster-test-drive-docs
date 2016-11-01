@@ -172,7 +172,7 @@
         },
         {
             "location": "/gluster-module-3/",
-            "text": "THIS LAB IS A WORK IN PROGRESS\n\n\nLab Guide \n Gluster Test Drive Module 3 \n Volume Operations and Administration\n\n\nLab Agenda\n\n\nWelcome to the Gluster Test Drive Module 3 - Volume Operations and Administration. In this lab you will:\n\n\n\n\nInitiate and observe volume self-heal behavior\n\n\nExpand a distribute-replicate volume and observe rebalance\n\n\nChange volume configurations and view changes\n\n\nUnderstand the use of the \nvolume profile\n command\n\n\nUnderstand the use of the \nvolume top\n command\n\n\nSet and observe volume and directory quotas",
+            "text": "THIS LAB IS A WORK IN PROGRESS\n\n\nLab Guide \n Gluster Test Drive Module 3 \n Volume Operations and Administration\n\n\nLab Agenda\n\n\nWelcome to the Gluster Test Drive Module 3 - Volume Operations and Administration. In this lab you will:\n\n\n\n\nInitiate and observe volume self-heal behavior\n\n\nExpand a distribute-replicate volume and observe rebalance\n\n\nChange volume configurations and view changes\n\n\nUnderstand the use of the \nvolume profile\n command\n\n\nUnderstand the use of the \nvolume top\n command\n\n\nSet and observe volume and directory quotas\n\n\n\n\nLab Setup\n\n\nConnect to the Lab\n\n\nConnect to the \nrhgs1\n server instance using its public IP address from the \nAddl. Info\n tab to the right (Linux/Mac example below).\n\n\nssh gluster@<rhgs1PublicIP>\n\n\n\n\nIf Needed, Create the Volume\n\n\nIf you have not already done so as part of \nModule 2\n, deploy the \nrepvol\n volume using the provided gdeploy configuraiton file.\n\n\ngdeploy -c ~/repvol.conf\n\n\n\n\nConfirm the volume configuration.\n\n\nsudo gluster volume info repvol\n\n\n\n\nVolume Name: repvol\n\n\nType: Replicate\n\n\nVolume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f\n\n\nStatus: Started\n\n\nNumber of Bricks: 1 x 2 = 2\n\n\nTransport-type: tcp\n\n\nBricks:\n\n\nBrick1: rhgs1:/rhgs/brick_xvdc/repvol\n\n\nBrick2: rhgs2:/rhgs/brick_xvdc/repvol\n\n\nOptions Reconfigured:\n\n\nperformance.readdir-ahead: on\n\n\nVolume Self-Healing\n\n\nAbout Self-Healing\n\n\nA Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.\n\n\nOfflining a Brick\n\n\nYour \nrepvol\n volume has two bricks and a replication value of 2, and therefore a single replica set between bricks on nodes \nrhgs1\n and \nrhgs2\n. On node \nrhgs1\n you will stop all Gluster services and processes to ensure its bricks are offline.\n\n\nsudo systemctl stop glusterd.service\nsudo pkill glusterfs\nsudo pkill glusterfsd\n\n\n\n\nConfirm there are no gluster processes running. The below command should return nothing.\n\n\nsudo ps -ef |grep glusterfs | grep -v grep\n\n\n\n\nWriting Files to the Degraded Volume\n\n\nssh gluster@client1\n\n\nsudo mkdir -p /rhgs/client/native/repvol\n\nsudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol\n\ndf -h | grep repvol\n\nrhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol\n\n\nsudo mkdir /rhgs/client/native/repvol/mydir\n\nsudo chmod 777 /rhgs/client/native/repvol/mydir\n\nfor i in {001..010}; do echo hello$i > /rhgs/client/native/repvol/mydir/healme$i; done\n\n\nls /rhgs/client/native/repvol/mydir/ | wc -l\n\n10\n\n\nexit\n\n\nls /rhgs/brick_xvdc/repvol/mydir\n\nls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory\n\n\nssh gluster@rhgs2\n\n\nsudo gluster volume status repvol\n\nStatus of volume: repvol\n\nGluster process                             TCP Port  RDMA Port  Online  Pid\n\n\n\n\nBrick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468\n\nNFS Server on localhost                     2049      0          Y       11490\n\nSelf-heal Daemon on localhost               N/A       N/A        Y       11495\n\n\nTask Status of Volume repvol\n\n\nThere are no active volume tasks\n\n\n/rhgs/brick_xvdc/repvol/mydir | wc -l\n\n10\n\n\nsudo gluster vol heal repvol info\n\nBrick rhgs1:/rhgs/brick_xvdc/repvol\n\nStatus: Transport endpoint is not connected\n\n\nBrick rhgs2:/rhgs/brick_xvdc/repvol\n\n/ \n\n/mydir \n\n/mydir/healme001 \n\n/mydir/healme002 \n\n/mydir/healme003 \n\n/mydir/healme004 \n\n/mydir/healme005 \n\n/mydir/healme006 \n\n/mydir/healme007 \n\n/mydir/healme008 \n\n/mydir/healme009 \n\n/mydir/healme010 \n\nNumber of entries: 12\n\n\nexit\n\n\nsudo systemctl start glusterd.service\n\nssh gluster@client1\n\nstat /rhgs/client/native/repvol/mydir/healme001\n\nexit\n\n\nls /rhgs/brick_xvdc/repvol/mydir/ | wc -l\n\n10",
             "title": "Module 3 - Volume Operations and Administration"
         },
         {
@@ -189,6 +189,46 @@
             "location": "/gluster-module-3/#lab-agenda",
             "text": "Welcome to the Gluster Test Drive Module 3 - Volume Operations and Administration. In this lab you will:   Initiate and observe volume self-heal behavior  Expand a distribute-replicate volume and observe rebalance  Change volume configurations and view changes  Understand the use of the  volume profile  command  Understand the use of the  volume top  command  Set and observe volume and directory quotas",
             "title": "Lab Agenda"
+        },
+        {
+            "location": "/gluster-module-3/#lab-setup",
+            "text": "",
+            "title": "Lab Setup"
+        },
+        {
+            "location": "/gluster-module-3/#connect-to-the-lab",
+            "text": "Connect to the  rhgs1  server instance using its public IP address from the  Addl. Info  tab to the right (Linux/Mac example below).  ssh gluster@<rhgs1PublicIP>",
+            "title": "Connect to the Lab"
+        },
+        {
+            "location": "/gluster-module-3/#if-needed-create-the-volume",
+            "text": "If you have not already done so as part of  Module 2 , deploy the  repvol  volume using the provided gdeploy configuraiton file.  gdeploy -c ~/repvol.conf  Confirm the volume configuration.  sudo gluster volume info repvol  Volume Name: repvol  Type: Replicate  Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f  Status: Started  Number of Bricks: 1 x 2 = 2  Transport-type: tcp  Bricks:  Brick1: rhgs1:/rhgs/brick_xvdc/repvol  Brick2: rhgs2:/rhgs/brick_xvdc/repvol  Options Reconfigured:  performance.readdir-ahead: on",
+            "title": "If Needed, Create the Volume"
+        },
+        {
+            "location": "/gluster-module-3/#volume-self-healing",
+            "text": "",
+            "title": "Volume Self-Healing"
+        },
+        {
+            "location": "/gluster-module-3/#about-self-healing",
+            "text": "A Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.",
+            "title": "About Self-Healing"
+        },
+        {
+            "location": "/gluster-module-3/#offlining-a-brick",
+            "text": "Your  repvol  volume has two bricks and a replication value of 2, and therefore a single replica set between bricks on nodes  rhgs1  and  rhgs2 . On node  rhgs1  you will stop all Gluster services and processes to ensure its bricks are offline.  sudo systemctl stop glusterd.service\nsudo pkill glusterfs\nsudo pkill glusterfsd  Confirm there are no gluster processes running. The below command should return nothing.  sudo ps -ef |grep glusterfs | grep -v grep",
+            "title": "Offlining a Brick"
+        },
+        {
+            "location": "/gluster-module-3/#writing-files-to-the-degraded-volume",
+            "text": "ssh gluster@client1  sudo mkdir -p /rhgs/client/native/repvol \nsudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol \ndf -h | grep repvol \nrhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol  sudo mkdir /rhgs/client/native/repvol/mydir \nsudo chmod 777 /rhgs/client/native/repvol/mydir \nfor i in {001..010}; do echo hello$i > /rhgs/client/native/repvol/mydir/healme$i; done  ls /rhgs/client/native/repvol/mydir/ | wc -l \n10  exit  ls /rhgs/brick_xvdc/repvol/mydir \nls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory  ssh gluster@rhgs2  sudo gluster volume status repvol \nStatus of volume: repvol \nGluster process                             TCP Port  RDMA Port  Online  Pid   Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468 \nNFS Server on localhost                     2049      0          Y       11490 \nSelf-heal Daemon on localhost               N/A       N/A        Y       11495",
+            "title": "Writing Files to the Degraded Volume"
+        },
+        {
+            "location": "/gluster-module-3/#task-status-of-volume-repvol",
+            "text": "There are no active volume tasks  /rhgs/brick_xvdc/repvol/mydir | wc -l \n10  sudo gluster vol heal repvol info \nBrick rhgs1:/rhgs/brick_xvdc/repvol \nStatus: Transport endpoint is not connected  Brick rhgs2:/rhgs/brick_xvdc/repvol \n/  \n/mydir  \n/mydir/healme001  \n/mydir/healme002  \n/mydir/healme003  \n/mydir/healme004  \n/mydir/healme005  \n/mydir/healme006  \n/mydir/healme007  \n/mydir/healme008  \n/mydir/healme009  \n/mydir/healme010  \nNumber of entries: 12  exit  sudo systemctl start glusterd.service \nssh gluster@client1 \nstat /rhgs/client/native/repvol/mydir/healme001 \nexit  ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l \n10",
+            "title": "Task Status of Volume repvol"
         },
         {
             "location": "/gluster-module-4/",

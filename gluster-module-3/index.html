@@ -132,6 +132,12 @@
         
             <li><a href="#lab-agenda">Lab Agenda</a></li>
         
+            <li><a href="#lab-setup">Lab Setup</a></li>
+        
+            <li><a href="#volume-self-healing">Volume Self-Healing</a></li>
+        
+            <li><a href="#task-status-of-volume-repvol">Task Status of Volume repvol</a></li>
+        
     
     </ul>
 </div></div>
@@ -148,7 +154,97 @@
 <li>Understand the use of the <code>volume profile</code> command</li>
 <li>Understand the use of the <code>volume top</code> command</li>
 <li>Set and observe volume and directory quotas</li>
-</ul></div>
+</ul>
+<h2 id="lab-setup">Lab Setup</h2>
+<h3 id="connect-to-the-lab">Connect to the Lab</h3>
+<p>Connect to the <strong>rhgs1</strong> server instance using its public IP address from the <strong>Addl. Info</strong> tab to the right (Linux/Mac example below).</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
+
+
+<h3 id="if-needed-create-the-volume">If Needed, Create the Volume</h3>
+<p>If you have not already done so as part of <strong>Module 2</strong>, deploy the <strong>repvol</strong> volume using the provided gdeploy configuraiton file.</p>
+<pre class="codehilite"><code class="language-bash">gdeploy -c ~/repvol.conf</code></pre>
+
+
+<p>Confirm the volume configuration.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume info repvol</code></pre>
+
+
+<p><code>Volume Name: repvol</code><br />
+<code>Type: Replicate</code><br />
+<code>Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 1 x 2 = 2</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdc/repvol</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
+<h2 id="volume-self-healing">Volume Self-Healing</h2>
+<h3 id="about-self-healing">About Self-Healing</h3>
+<p>A Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.</p>
+<h3 id="offlining-a-brick">Offlining a Brick</h3>
+<p>Your <strong>repvol</strong> volume has two bricks and a replication value of 2, and therefore a single replica set between bricks on nodes <strong>rhgs1</strong> and <strong>rhgs2</strong>. On node <strong>rhgs1</strong> you will stop all Gluster services and processes to ensure its bricks are offline.</p>
+<pre class="codehilite"><code class="language-bash">sudo systemctl stop glusterd.service
+sudo pkill glusterfs
+sudo pkill glusterfsd</code></pre>
+
+
+<p>Confirm there are no gluster processes running. The below command should return nothing.</p>
+<pre class="codehilite"><code class="language-bash">sudo ps -ef |grep glusterfs | grep -v grep</code></pre>
+
+
+<h3 id="writing-files-to-the-degraded-volume">Writing Files to the Degraded Volume</h3>
+<p>ssh gluster@client1</p>
+<p>sudo mkdir -p /rhgs/client/native/repvol<br />
+sudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol<br />
+df -h | grep repvol<br />
+rhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol</p>
+<p>sudo mkdir /rhgs/client/native/repvol/mydir<br />
+sudo chmod 777 /rhgs/client/native/repvol/mydir<br />
+for i in {001..010}; do echo hello$i &gt; /rhgs/client/native/repvol/mydir/healme$i; done</p>
+<p>ls /rhgs/client/native/repvol/mydir/ | wc -l<br />
+10</p>
+<p>exit</p>
+<p>ls /rhgs/brick_xvdc/repvol/mydir<br />
+ls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory</p>
+<p>ssh gluster@rhgs2</p>
+<p>sudo gluster volume status repvol<br />
+Status of volume: repvol<br />
+Gluster process                             TCP Port  RDMA Port  Online  Pid</p>
+<hr />
+<p>Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468<br />
+NFS Server on localhost                     2049      0          Y       11490<br />
+Self-heal Daemon on localhost               N/A       N/A        Y       11495</p>
+<h2 id="task-status-of-volume-repvol">Task Status of Volume repvol</h2>
+<p>There are no active volume tasks</p>
+<p>/rhgs/brick_xvdc/repvol/mydir | wc -l<br />
+10</p>
+<p>sudo gluster vol heal repvol info<br />
+Brick rhgs1:/rhgs/brick_xvdc/repvol<br />
+Status: Transport endpoint is not connected</p>
+<p>Brick rhgs2:/rhgs/brick_xvdc/repvol<br />
+/ <br />
+/mydir <br />
+/mydir/healme001 <br />
+/mydir/healme002 <br />
+/mydir/healme003 <br />
+/mydir/healme004 <br />
+/mydir/healme005 <br />
+/mydir/healme006 <br />
+/mydir/healme007 <br />
+/mydir/healme008 <br />
+/mydir/healme009 <br />
+/mydir/healme010 <br />
+Number of entries: 12</p>
+<p>exit</p>
+<p>sudo systemctl start glusterd.service<br />
+ssh gluster@client1<br />
+stat /rhgs/client/native/repvol/mydir/healme001<br />
+exit</p>
+<p>ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l<br />
+10</p></div>
         </div>
 
         <footer class="col-md-12">
