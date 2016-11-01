@@ -20,9 +20,11 @@ If you are a Windows user, you will need a Secure Shell client like *PuTTY* to c
 
 Mac and Linux users, you will use your preferred terminal application (this should already be installed on your machine). For accessing the Windows lab client system interface via RDP, you will need a RDP client program such as *Vinagre* on Linux or the *Microsoft Remote Desktop* client for Mac. Vinagre is likely available for your Linux distribution using your standard package manager. You can download the Mac RDP client here: <https://www.microsoft.com/en-us/download/details.aspx?id=18140>
 
-## Getting to know your lab environment
+## Getting to Know Your Lab Environment
 
-### Starting the lab
+### Starting the Lab
+
+> **NOTE** Module 1 is not hands-on and does not require the lab to be started. Because the time limit will begin after clicking the **Start** button, you may wish to wait until you are ready to begin a later module.
 
 1. On the **Lab Details** tab to the right, notice the lab properties:
 
@@ -40,14 +42,14 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
 <ol start="3"><li>The <strong>Connect</strong> panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily.</li></ol>
 
-> **Tip** If the **Connect** tab is unavailable, make sure you have clicked **Start Lab** at the top of your screen.
+> **TIP** If the **Connect** tab is unavailable, make sure you have clicked **Start Lab** at the top of your screen.
 
 
 ## Accessing the lab
 
 All of the information you need to access your test drive lab instances is available via the **Addl. Info** tab to the right. There you will find relevant public IP addresses, usernames, and passwords for your personal lab environment.
 
-> **Tip** If the **Addl. Info** tab is not visible, make sure you have clicked the **Start Lab** button at the top of your screen and that the lab build has completed.
+> **TIP** If the **Addl. Info** tab is not visible, make sure you have clicked the **Start Lab** button at the top of your screen and that the lab build has completed.
 
 All Linux instances may be accessed via your local SSH client.
 
