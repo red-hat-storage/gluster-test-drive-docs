@@ -10,6 +10,8 @@ markdown_extensions:
     - codehilite
     - nl2br
 theme: united
+extra:
+  logo: 'images/Logo_RH_RGB_Default.svg'
 pages:
 - Introduction: index.md
 - Modules:
