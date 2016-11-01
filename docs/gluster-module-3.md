@@ -66,39 +66,83 @@ sudo ps -ef |grep glusterfs | grep -v grep
 
 ### Writing Files to the Degraded Volume
 
+From **rhgs1** connect via SSH to **client1**.
+
 ```bash
 ssh gluster@client1
+```
 
+If you did not already mount the **repvol** volume as part of Module 2, do it now.
+
+```bash
 sudo mkdir -p /rhgs/client/native/repvol
 sudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol
-df -h | grep repvol
-rhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol
+```
 
+Confirm the volume is mounted.
+```bash
+df -h | grep repvol
+```
+
+``rhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol``
+
+Create a directory to hold your files and set permissions appropriately.
+```bash
 sudo mkdir /rhgs/client/native/repvol/mydir
 sudo chmod 777 /rhgs/client/native/repvol/mydir
+```
+
+Write 10 new files to the directory you created in the mounted volume.
+
+> **NOTE** There is a default timeout of 42 seconds before which the client will continue trying to contact the offline brick. If that timeout has not expired before you issue a file operation on the mounted volume, you may experience a delay at the client.
+
+```bash
 for i in {001..010}; do echo hello$i > /rhgs/client/native/repvol/mydir/healme$i; done
+```
 
+Confirm the new files were written.
+```bash
 ls /rhgs/client/native/repvol/mydir/ | wc -l
-10
+```
 
+``10``
+
+Return to lab node **rhgs1**.
+
+```bash
 exit
+```
 
+On node **rhgs1**, note that the new directory you just created is not visible on the brick backend because this brick was offline at the time of the write.
+
+```bash
 ls /rhgs/brick_xvdc/repvol/mydir
-ls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory
+```
 
+``ls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory``
+
+Connect to node **rhgs2** via SSH.
+
+```bash
 ssh gluster@rhgs2
+```
 
+On node **rhgs2**, note that the `volume status` output only shows the processes for itself and nothing for node **rhgs1**.
+
+```bash
 sudo gluster volume status repvol
-Status of volume: repvol
-Gluster process                             TCP Port  RDMA Port  Online  Pid
-------------------------------------------------------------------------------
-Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468
-NFS Server on localhost                     2049      0          Y       11490
-Self-heal Daemon on localhost               N/A       N/A        Y       11495
- 
-Task Status of Volume repvol
-------------------------------------------------------------------------------
-There are no active volume tasks
+```
+
+``Status of volume: repvol``
+``Gluster process                             TCP Port  RDMA Port  Online  Pid``
+``------------------------------------------------------------------------------``
+``Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468``
+``NFS Server on localhost                     2049      0          Y       11490``
+``Self-heal Daemon on localhost               N/A       N/A        Y       11495``
+`` `` 
+``Task Status of Volume repvol``
+``------------------------------------------------------------------------------``
+``There are no active volume tasks``
 
  /rhgs/brick_xvdc/repvol/mydir | wc -l
 10
