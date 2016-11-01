@@ -144,35 +144,72 @@ sudo gluster volume status repvol
 ``------------------------------------------------------------------------------``
 ``There are no active volume tasks``
 
+Confirm that the files you created at the client are visible on the brick backend.
+
+```bash
  /rhgs/brick_xvdc/repvol/mydir | wc -l
-10
-
-sudo gluster vol heal repvol info
-Brick rhgs1:/rhgs/brick_xvdc/repvol
-Status: Transport endpoint is not connected
-
-Brick rhgs2:/rhgs/brick_xvdc/repvol
-/ 
-/mydir 
-/mydir/healme001 
-/mydir/healme002 
-/mydir/healme003 
-/mydir/healme004 
-/mydir/healme005 
-/mydir/healme006 
-/mydir/healme007 
-/mydir/healme008 
-/mydir/healme009 
-/mydir/healme010 
-Number of entries: 12
-
-exit
-
-sudo systemctl start glusterd.service
-ssh gluster@client1
-stat /rhgs/client/native/repvol/mydir/healme001
-exit
-
-ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
-10
 ```
+
+``10``
+
+You can view the volume's knowledge of the pending file heals with the below command.
+
+```bash
+sudo gluster volume heal repvol info
+```
+
+``Brick rhgs1:/rhgs/brick_xvdc/repvol``
+``Status: Transport endpoint is not connected``
+`` ``
+``Brick rhgs2:/rhgs/brick_xvdc/repvol````
+``/ ``
+``/mydir ``
+``/mydir/healme001 ``
+``/mydir/healme002 ``
+``/mydir/healme003 ``
+``/mydir/healme004 ``
+``/mydir/healme005 ``
+``/mydir/healme006 ``
+``/mydir/healme007 ``
+``/mydir/healme008 ``
+``/mydir/healme009 ``
+``/mydir/healme010 ``
+``Number of entries: 12``
+
+Return to lab node **rhgs1**.
+
+```bash
+exit
+```
+
+Re-start the gluster services. Note that starting the `glusterd` management daemon will automatically start the `glusterfsd` brick and `glusterfs` supporting processes.
+
+```bash
+sudo systemctl start glusterd.service
+```
+
+Connect again to **client1** via SSH.
+
+```bash
+ssh gluster@client1
+```
+
+Stat a file that you created above. This will trigger client-side self-heal.
+
+```bash
+stat /rhgs/client/native/repvol/mydir/healme001
+```
+
+Return to lab node **rhgs1**.
+
+```bash
+exit
+```
+
+Looking again at the brick backend for the **repvol** volume on node **rhgs1** we can now see the healed files are present.
+
+```bash
+ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
+```
+
+``10``
