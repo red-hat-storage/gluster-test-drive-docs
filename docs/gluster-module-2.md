@@ -276,7 +276,7 @@ sudo gluster volume info
 ``Brick6: rhgs6:/rhgs/brick_xvdb/distvol``
 ``Options Reconfigured:``
 ``performance.readdir-ahead: on``
- 
+`` `` 
 ``Volume Name: repvol``
 ``Type: Replicate``
 ``Volume ID: c16eaa3d-7ccc-42ad-bd71-d43bb16229b2``
@@ -313,6 +313,7 @@ sudo gluster volume status repvol
 ``Self-heal Daemon on rhgs4                   N/A       N/A        Y       11979``
 ``NFS Server on rhgs6                         2049      0          Y       11833``
 ``Self-heal Daemon on rhgs6                   N/A       N/A        Y       11838``
+`` ``
 ``Task Status of Volume repvol``
 ``------------------------------------------------------------------------------``
 ``There are no active volume tasks``
