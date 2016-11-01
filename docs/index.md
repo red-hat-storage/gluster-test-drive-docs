@@ -1,6 +1,6 @@
 # Introduction
 
-Welcome to the **Red Hat Gluster Storage** Hands-on Test Drive. To make your Gluster experience awesome, the contents of this test drive have been divided into following modules.
+Welcome to the **Red Hat Gluster Storage** Hands-on Test Drive. To make your Gluster experience awesome, the contents of this test drive have been divided into the following modules.
 
 - <a href="gluster-module-1/">**Module 1 :** Introduction to Gluster concepts</a>
 - <a href="gluster-module-2/">**Module 2 :** Volume Setup and Client Access</a>
