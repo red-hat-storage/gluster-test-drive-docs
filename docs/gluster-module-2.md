@@ -610,4 +610,4 @@ ls /rhgs/brick_xvdc/repvol/mysmbdir/ | wc -l
 
 # End of Module 2
 
-This concludes **Gluster Test Drive Module 2 - Volume Setup and Client Access**. You man continue now with Module 3, or return at any time to access the modules in any orderyou wish.
+This concludes **Gluster Test Drive Module 2 - Volume Setup and Client Access**. You man continue now with Module 3, or return at any time to access the modules in any order you wish.
