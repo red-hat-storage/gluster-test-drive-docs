@@ -9,7 +9,7 @@ markdown_extensions:
     - smart_strong
     - codehilite
     - nl2br
-theme: material
+theme: united
 pages:
 - Introduction: index.md
 - Modules:
