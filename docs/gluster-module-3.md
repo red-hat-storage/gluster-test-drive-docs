@@ -66,6 +66,7 @@ sudo ps -ef |grep glusterfs | grep -v grep
 
 ### Writing Files to the Degraded Volume
 
+```bash
 ssh gluster@client1
 
 sudo mkdir -p /rhgs/client/native/repvol
@@ -130,4 +131,4 @@ exit
 
 ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
 10
-
+```
