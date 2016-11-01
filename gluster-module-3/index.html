@@ -136,8 +136,6 @@
         
             <li><a href="#volume-self-healing">Volume Self-Healing</a></li>
         
-            <li><a href="#task-status-of-volume-repvol">Task Status of Volume repvol</a></li>
-        
     
     </ul>
 </div></div>
@@ -196,55 +194,70 @@ sudo pkill glusterfsd</code></pre>
 
 
 <h3 id="writing-files-to-the-degraded-volume">Writing Files to the Degraded Volume</h3>
-<p>ssh gluster@client1</p>
-<p>sudo mkdir -p /rhgs/client/native/repvol<br />
-sudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol<br />
-df -h | grep repvol<br />
-rhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol</p>
-<p>sudo mkdir /rhgs/client/native/repvol/mydir<br />
-sudo chmod 777 /rhgs/client/native/repvol/mydir<br />
-for i in {001..010}; do echo hello$i &gt; /rhgs/client/native/repvol/mydir/healme$i; done</p>
-<p>ls /rhgs/client/native/repvol/mydir/ | wc -l<br />
-10</p>
-<p>exit</p>
-<p>ls /rhgs/brick_xvdc/repvol/mydir<br />
-ls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory</p>
-<p>ssh gluster@rhgs2</p>
-<p>sudo gluster volume status repvol<br />
-Status of volume: repvol<br />
-Gluster process                             TCP Port  RDMA Port  Online  Pid</p>
-<hr />
-<p>Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468<br />
-NFS Server on localhost                     2049      0          Y       11490<br />
-Self-heal Daemon on localhost               N/A       N/A        Y       11495</p>
-<h2 id="task-status-of-volume-repvol">Task Status of Volume repvol</h2>
-<p>There are no active volume tasks</p>
-<p>/rhgs/brick_xvdc/repvol/mydir | wc -l<br />
-10</p>
-<p>sudo gluster vol heal repvol info<br />
-Brick rhgs1:/rhgs/brick_xvdc/repvol<br />
-Status: Transport endpoint is not connected</p>
-<p>Brick rhgs2:/rhgs/brick_xvdc/repvol<br />
-/ <br />
-/mydir <br />
-/mydir/healme001 <br />
-/mydir/healme002 <br />
-/mydir/healme003 <br />
-/mydir/healme004 <br />
-/mydir/healme005 <br />
-/mydir/healme006 <br />
-/mydir/healme007 <br />
-/mydir/healme008 <br />
-/mydir/healme009 <br />
-/mydir/healme010 <br />
-Number of entries: 12</p>
-<p>exit</p>
-<p>sudo systemctl start glusterd.service<br />
-ssh gluster@client1<br />
-stat /rhgs/client/native/repvol/mydir/healme001<br />
-exit</p>
-<p>ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l<br />
-10</p></div>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1
+
+sudo mkdir -p /rhgs/client/native/repvol
+sudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol
+df -h | grep repvol
+rhgs2:repvol     10G   34M   10G   1% /rhgs/client/native/repvol
+
+sudo mkdir /rhgs/client/native/repvol/mydir
+sudo chmod 777 /rhgs/client/native/repvol/mydir
+for i in {001..010}; do echo hello$i &gt; /rhgs/client/native/repvol/mydir/healme$i; done
+
+ls /rhgs/client/native/repvol/mydir/ | wc -l
+10
+
+exit
+
+ls /rhgs/brick_xvdc/repvol/mydir
+ls: cannot access /rhgs/brick_xvdc/repvol/mydir: No such file or directory
+
+ssh gluster@rhgs2
+
+sudo gluster volume status repvol
+Status of volume: repvol
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468
+NFS Server on localhost                     2049      0          Y       11490
+Self-heal Daemon on localhost               N/A       N/A        Y       11495
+
+Task Status of Volume repvol
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+ /rhgs/brick_xvdc/repvol/mydir | wc -l
+10
+
+sudo gluster vol heal repvol info
+Brick rhgs1:/rhgs/brick_xvdc/repvol
+Status: Transport endpoint is not connected
+
+Brick rhgs2:/rhgs/brick_xvdc/repvol
+/ 
+/mydir 
+/mydir/healme001 
+/mydir/healme002 
+/mydir/healme003 
+/mydir/healme004 
+/mydir/healme005 
+/mydir/healme006 
+/mydir/healme007 
+/mydir/healme008 
+/mydir/healme009 
+/mydir/healme010 
+Number of entries: 12
+
+exit
+
+sudo systemctl start glusterd.service
+ssh gluster@client1
+stat /rhgs/client/native/repvol/mydir/healme001
+exit
+
+ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
+10</code></pre></div>
         </div>
 
         <footer class="col-md-12">
