@@ -1,5 +1,6 @@
 site_name: RHGS Test Drive Instructions
 site_favicon: images/favicon.ico
+copyright: 'Copyright ©2016 Red Hat, Inc.'
 markdown_extensions:
     - smarty
     - toc
