@@ -14,3 +14,6 @@ pages:
 - Modules:
     - 'Module 1 - Introduction to Gluster concepts': gluster-module-1.md
     - 'Module 2 - Volume Setup and Client Access': gluster-module-2.md
+    - 'Module 3 - Volume Operations and Administration': gluster-module-3.md
+    - 'Module 4 - Disperse Volumes (Erasure Coding)': gluster-module-4.md
+    - 'Module 5 - Tiered Volumes (Cache Tiering)': gluster-module-5.md
