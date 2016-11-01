@@ -40,12 +40,14 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
 <ol start="3"><li>The <strong>Connect</strong> panel to the right is automatically opened when the lab starts. Practice closing and re-opening it. While open it may obscure some of these lab instructions temporarily.</li></ol>
 
-> **Tip** If the **Connect** tab is unavailable, make sure you click **Start Lab** at the top of your screen.
+> **Tip** If the **Connect** tab is unavailable, make sure you have clicked **Start Lab** at the top of your screen.
 
 
 ## Accessing the lab
 
 All of the information you need to access your test drive lab instances is available via the **Addl. Info** tab to the right. There you will find relevant public IP addresses, usernames, and passwords for your personal lab environment.
+
+> **Tip** If the **Addl. Info** tab is not visible, make sure you have clicked the **Start Lab** button at the top of your screen and that the lab build has completed.
 
 All Linux instances may be accessed via your local SSH client.
 
