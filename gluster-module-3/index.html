@@ -140,7 +140,7 @@
         
             <li><a href="#analyzing-volume-performance">Analyzing Volume Performance</a></li>
         
-            <li><a href="#administration-of-volume-quotas">Administration of Volume Quotas</a></li>
+            <li><a href="#administration-of-directory-quotas">Administration of Directory Quotas</a></li>
         
     
         <li class="main "><a href="#end-of-module-3">End of Module 3</a></li>
@@ -601,7 +601,60 @@ MBps Filename                                        Time
 ~~~ OUTPUT TRUNCATED ~~~
 </code></p>
 
-<h2 id="administration-of-volume-quotas">Administration of Volume Quotas</h2>
+<h2 id="administration-of-directory-quotas">Administration of Directory Quotas</h2>
+<h3 id="about-quotas">About Quotas</h3>
+<p>Directory quotas allow you to set limits on disk space used by directories or the volume. Storage administrators can control the disk space utilization at the directory or the volume level, or both. This is particularly useful in cloud deployments to facilitate the use of utility billing models.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume quota repvol enable</code></pre>
+
+
+<p><code>volume quota : success</code></p>
+<blockquote>
+<p><strong>NOTE</strong> Due to the limited scale of this lab and the distributed nature of Gluster volumes, it may be easy to exceed relatively low quota values. Because of this, and <em>only for the purpose of this lab</em>, you will set the quota timeout values to 0 below.</p>
+</blockquote>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume set repvol features.quota-timeout 0
+sudo gluster volume set repvol features.hard-timeout 0
+sudo gluster volume set repvol features.soft-timeout 0</code></pre>
+
+
+<blockquote>
+<p><strong>NOTE</strong> Directory quotas can only be set on directories that have previously been created by a Gluster client. Below you will set a quota on the <strong>mydir</strong> subdirectory of the <strong>repvol</strong> volume, which was created previously in the steps above. If this directory does not currently exist in your voulume, you will need to connect to <strong>client1</strong> and create it before proceeding.</p>
+</blockquote>
+<p>Set a quota hard limit of 200MB for the <strong>mydir</strong> subdirectory of the <strong>repvol</strong> volume, and then view the settings.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume quota repvol limit-usage /mydir 200MB</code></pre>
+
+
+<p><code>volume quota : success</code></p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume quota repvol list</code></pre>
+
+
+<p><code>
+                  Path                   Hard-limit  Soft-limit      Used  Available  Soft-limit exceeded? Hard-limit exceeded?
+-------------------------------------------------------------------------------------------------------------------------------
+/mydir                                   200.0MB     80%(160.0MB)   82.4MB 117.6MB              No                   No
+</code></p>
+
+<p>Connect again to node <strong>client1</strong> via SSH.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
+
+
+<p>Attempt to create 200 10MB files in the <strong>mydir</strong> subdirectory of the volume. At some point during this command loop, the writes should fail with a <strong>Disk quota exceeded</strong> error message.</p>
+<pre class="codehilite"><code class="language-bash">for i in {001..200}; do dd if=/dev/zero of=/rhgs/client/native/repvol/mydir/quota$i bs=1024k count=10; done</code></pre>
+
+
+<p>Exit <strong>client1</strong> returning to node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<p>Take another look at the <code>quota list</code> output for the volume, noting the quota limits exceeded.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume quota repvol list</code></pre>
+
+
+<p><code>
+                  Path                   Hard-limit  Soft-limit      Used  Available  Soft-limit exceeded? Hard-limit exceeded?
+-------------------------------------------------------------------------------------------------------------------------------
+/mydir                                   200.0MB     80%(160.0MB)  200.0MB  0Bytes             Yes                  Yes
+</code></p>
+
 <h1 id="end-of-module-3">End of Module 3</h1>
 <p>This concludes <strong>Gluster Test Drive Module 3 - Volume Operations and Administration</strong>. You may continue now with Module 4, or return at any time to access the modules in any order you wish.</p></div>
         </div>
