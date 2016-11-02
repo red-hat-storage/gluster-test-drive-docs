@@ -219,7 +219,7 @@ cat ~/repvol.conf
 ``[hosts]``
 ``rhgs1``
 ``rhgs2``
-
+`` ``
 ``# Common backend setup for 2 of the hosts.``
 ``[backend-setup]``
 ``devices=xvdc``
@@ -228,7 +228,7 @@ cat ~/repvol.conf
 ``lvs=rhgs_lv2``
 ``mountpoints=/rhgs/brick_xvdc``
 ``brick_dirs=/rhgs/brick_xvdc/repvol``
-
+`` ``
 ``[volume]``
 ``action=create``
 ``volname=repvol``
