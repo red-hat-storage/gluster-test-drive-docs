@@ -170,7 +170,7 @@
 <pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
 
 
-<h3 id="if-needed-create-the-volume">If Needed, Create the Volume</h3>
+<h3 id="if-needed-create-the-repvol-volume">If Needed, Create the repvol Volume</h3>
 <p>If you have not already done so as part of <strong>Module 2</strong>, deploy the <strong>repvol</strong> volume using the provided gdeploy configuraiton file.</p>
 <pre class="codehilite"><code class="language-bash">gdeploy -c ~/repvol.conf</code></pre>
 
@@ -193,6 +193,7 @@
 <h2 id="volume-self-healing">Volume Self-Healing</h2>
 <h3 id="about-self-healing">About Self-Healing</h3>
 <p>A Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.</p>
+<p>There are two types of self-heal that operate concurrently: <em>client-side</em> and <em>server-side</em> (also known as <em>proactive</em>). Client-side heals are triggered when a client performs a file operation on a file or directory marked as needing healed. Server-side heals are managed by background processes that run on each Gluster node, periodically scouring the bricks and healing any files that they find as marked.</p>
 <h3 id="offlining-a-brick">Offlining a Brick</h3>
 <p>Your <strong>repvol</strong> volume has two bricks and a replication value of 2, and therefore a single replica set between bricks on nodes <strong>rhgs1</strong> and <strong>rhgs2</strong>. On node <strong>rhgs1</strong> you will stop all Gluster services and processes to ensure its bricks are offline.</p>
 <pre class="codehilite"><code class="language-bash">sudo systemctl stop glusterd.service
@@ -210,6 +211,9 @@ sudo pkill glusterfsd</code></pre>
 
 
 <p>If you did not already mount the <strong>repvol</strong> volume as part of Module 2, do it now.</p>
+<blockquote>
+<p><em>NOTE</em> Below we mount the volume on <strong>client1</strong> using node <strong>rhgs2</strong> as the server because the Gluster services on node <strong>rhgs1</strong> were offlined above.</p>
+</blockquote>
 <pre class="codehilite"><code class="language-bash">sudo mkdir -p /rhgs/client/native/repvol
 sudo mount -t glusterfs rhgs2:repvol /rhgs/client/native/repvol</code></pre>
 
@@ -318,6 +322,170 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <p><code>10</code></p>
 <h2 id="volume-expansion-and-rebalance">Volume Expansion and Rebalance</h2>
 <h3 id="about-rebalance">About Rebalance</h3>
+<p>When a Gluster volume is scaled horizontally by adding additional bricks, the overall architecture of the volume changes fundamentally and affects data placement by the <em>Distributed Hash Algorithm</em>. New file writes can easily account for the new bricks by including them in the random file placement calculation. However, any existing files will remain on their original bricks until a <strong>rebalance</strong> is initiated by the administrator.</p>
+<p>A rebalance triggers a re-calculation of data placement for existing files in the volume. A background operation then takes responsibility for moving the files to their new bricks, as needed. This, of course, is one of the heavier operations that Gluster performs, consuming additional system resources across the trusted pool until the rebalance is complete.</p>
+<h3 id="about-distributed-replicated-volumes">About Distributed-Replicated Volumes</h3>
+<p>In the lab modules so far you have worked separately with <em>Distributed</em> and <em>Replicated</em> volumes. Here you will expand your <strong>repvol</strong> volume by adding additional bricks. The replica count remains 2, meaning that every file is written synchronously to two bricks. By adding additional bricks (which you must do in sets of 2 to maintain the replica count), you are creating a distribution set out of multiple replica sets. Upon a file write, first a hashing calculation will be made to determine under which branch of the distribute set to place the file, then the write is made synchronously to the replica peers in that branch. This will be further illustrated in the commands below.</p>
+<h3 id="add-files-to-the-repvol-volume">Add Files to the repvol Volume</h3>
+<p>From <strong>rhgs1</strong> connect via SSH to <strong>client1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
+
+
+<p>Add 200 new files to the <strong>repvol</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">for i in {001..200}; do echo hello$i &gt; /rhgs/client/native/repvol/mydir/rebalanceme$i; done</code></pre>
+
+
+<p>Confim the file count from the client. Note that we added 10 files in the self-heal section above, so the total file count should be 210.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/client/native/repvol/mydir | wc -l</code></pre>
+
+
+<p><code>210</code></p>
+<p>Exit <strong>client1</strong>, returning to node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<p>On node <strong>rhgs1</strong>, list the backend brick contents and notice that the file count matches that of the client&rsquo;s view of the volume. Currently, there is only one branch to the distribute set, so all files will be located on this brick and on its replica peer, <strong>rhgs2</strong>.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mydir | wc -l</code></pre>
+
+
+<p><code>210</code></p>
+<h3 id="expand-the-repvol-volume">Expand the repvol Volume</h3>
+<p>First, examine the existing configuration for the <strong>repvol</strong> volume. Notice in particular the <strong>Type</strong> and <strong>Number of Bricks</strong> fields.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume info repvol</code></pre>
+
+
+<p><code>Volume Name: repvol</code><br />
+<code>Type: Replicate</code><br />
+<code>Volume ID: 2ec69e5b-0d04-4a3e-94c3-337b4302fbe8</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 1 x 2 = 2</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdc/repvol</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
+<p>You will use the <code>gdeploy</code> command to create the new brick backends for nodes rhgs3 through rhgs6, and to add these new bricks to the layout of the <strong>repvol</strong> volume. Take a look at the contents of the configuration file.</p>
+<pre class="codehilite"><code class="language-bash">cat ~/repvol-expand.conf</code></pre>
+
+
+<p><code>[hosts]</code><br />
+<code>rhgs3</code><br />
+<code>rhgs4</code><br />
+<code>rhgs5</code><br />
+<code>rhgs6</code><br />
+<code></code><br />
+<code>[backend-setup]</code><br />
+<code>devices=xvdc</code><br />
+<code>vgs=rhgs_vg2</code><br />
+<code>pools=rhgs_thinpool2</code><br />
+<code>lvs=rhgs_lv2</code><br />
+<code>mountpoints=/rhgs/brick_xvdc</code><br />
+<code>brick_dirs=/rhgs/brick_xvdc/repvol</code><br />
+<code></code><br />
+<code>[volume]</code><br />
+<code>action=add-brick</code><br />
+<code>volname=rhgs1:repvol</code><br />
+<code>bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol</code></p>
+<p>Use <code>gdeploy</code> to make the volume change.</p>
+<pre class="codehilite"><code class="language-bash">gdeploy -c ~/repvol-expand.conf </code></pre>
+
+
+<p>Take a look at the updated volume configuration. Note the changes to <strong>Type</strong> and <strong>Number of Bricks</strong>, as well as the additional bricks listed.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume info repvol</code></pre>
+
+
+<p><code>Volume Name: repvol</code><br />
+<code>Type: Distributed-Replicate</code><br />
+<code>Volume ID: 2ec69e5b-0d04-4a3e-94c3-337b4302fbe8</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 3 x 2 = 6</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick3: rhgs3:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick4: rhgs4:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick5: rhgs5:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick6: rhgs6:/rhgs/brick_xvdc/repvol</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
+<p>Start the rebalance operation on the <strong>repvol</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume rebalance repvol start</code></pre>
+
+
+<p><code>volume rebalance: repvol: success: Rebalance on repvol has been started successfully. Use rebalance status command to check status of the rebalance process.</code><br />
+<code>ID: e13d3c36-9531-4411-98aa-c974de5e2219</code></p>
+<p>Take a look at the status of the rebalance. If you run this command quickly after the <code>rebalance start</code> above you may catch the <em>localhost</em> in the <em>in progress</em> status, but due to the limited scale of the lab the rebalance may complete before you run this command and instead show the <em>completed</em> status for this node.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume rebalance repvol status</code></pre>
+
+
+<p><code>Node Rebalanced-files          size       scanned      failures       skipped               status   run time in secs</code><br />
+<code>---------      -----------   -----------   -----------   -----------   -----------         ------------     --------------</code><br />
+<code>localhost               79         1.1KB           210             0             0          in progress               1.00</code><br />
+<code>rhgs2                0        0Bytes             0             0             0            completed               0.00</code><br />
+<code>rhgs3                0        0Bytes             0             0             0            completed               0.00</code><br />
+<code>rhgs4                0        0Bytes             0             0             0            completed               0.00</code><br />
+<code>rhgs5                0        0Bytes             0             0             0            completed               0.00</code><br />
+<code>rhgs6                0        0Bytes             0             0             0            completed               0.00</code><br />
+<code>volume rebalance: repvol: success</code></p>
+<p>Now take a look again at the count of files in the brick backend for <strong>repvol</strong> on node <strong>rhgs1</strong>. You will find that the number of files has reduced considerably.</p>
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mydir | wc -l</code></pre>
+
+
+<p><code>75</code></p>
+<p>To further illustrate the effect of the rebalance, connect to node <strong>rhgs5</strong> via SSH and look at the file count in the brick backend there.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@rhgs5</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mydir | wc -l</code></pre>
+
+
+<p><code>66</code></p>
+<p>Return to node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<h3 id="the-gstatus-command">The gstatus Command</h3>
+<p>A good summary view of your volume is available through the <code>gstatus</code> command. Passing the <code>-l</code> flag to this command will also provide a visual of the volume layout in ASCII format, which can be very handy for understanding the distribute branching and replica pairing.</p>
+<pre class="codehilite"><code class="language-bash">sudo gstatus -v repvol -l -w</code></pre>
+
+
+<p><code>Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)</code><br />
+<code>Status: HEALTHY                      201.00 MiB(raw used)</code><br />
+<code>Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)</code><br />
+<code>OverCommit: No                Snapshots:   0</code><br />
+<code></code><br />
+<code>Volume Information</code><br />
+<code>repvol           UP - 6/6 bricks up - Distributed-Replicate</code><br />
+<code>Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)</code><br />
+<code>Snapshots: 0</code><br />
+<code>Self Heal:  6/ 6</code><br />
+<code>Tasks Active: None</code><br />
+<code>Protocols: glusterfs:on  NFS:on  SMB:on</code><br />
+<code>Gluster Connectivty: 7 hosts, 78 tcp connections</code><br />
+<code></code><br />
+<code>repvol---------- +</code><br />
+<code>|</code><br />
+<code>Distribute (dht)</code><br />
+<code>|</code><br />
+<code>+-- Replica Set0 (afr)</code><br />
+<code>|     |</code><br />
+<code>|     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
+<code>|     |</code><br />
+<code>|     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
+<code>|</code><br />
+<code>+-- Replica Set1 (afr)</code><br />
+<code>|     |</code><br />
+<code>|     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
+<code>|     |</code><br />
+<code>|     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
+<code>|</code><br />
+<code>+-- Replica Set2 (afr)</code><br />
+<code>|</code><br />
+<code>+--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
+<code>|</code><br />
+<code>+--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></p>
 <h2 id="changing-volume-configuration">Changing Volume Configuration</h2>
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
 <h2 id="administration-of-volume-quotas">Administration of Volume Quotas</h2>

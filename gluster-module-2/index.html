@@ -327,16 +327,18 @@ rhgs6:/rhgs/brick_xvdb/distvol</code></pre>
 
 <p><code>[hosts]</code><br />
 <code>rhgs1</code><br />
-<code>rhgs2</code></p>
-<p><code># Common backend setup for 2 of the hosts.</code><br />
+<code>rhgs2</code><br />
+<code></code><br />
+<code># Common backend setup for 2 of the hosts.</code><br />
 <code>[backend-setup]</code><br />
 <code>devices=xvdc</code><br />
 <code>vgs=rhgs_vg2</code><br />
 <code>pools=rhgs_thinpool2</code><br />
 <code>lvs=rhgs_lv2</code><br />
 <code>mountpoints=/rhgs/brick_xvdc</code><br />
-<code>brick_dirs=/rhgs/brick_xvdc/repvol</code></p>
-<p><code>[volume]</code><br />
+<code>brick_dirs=/rhgs/brick_xvdc/repvol</code><br />
+<code></code><br />
+<code>[volume]</code><br />
 <code>action=create</code><br />
 <code>volname=repvol</code><br />
 <code>replica=yes</code><br />
