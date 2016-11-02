@@ -107,6 +107,9 @@ ls /rhgs/client/native/repvol/mydir/ | wc -l
 
 ``10``
 
+
+### Viewing the Volume State 
+
 Return to lab node **rhgs1**.
 
 ```bash
@@ -175,6 +178,9 @@ sudo gluster volume heal repvol info
 ``/mydir/healme009 ``
 ``/mydir/healme010 ``
 ``Number of entries: 12``
+
+
+### Triggering the Self-Heal
 
 Return to lab node **rhgs1**.
 
