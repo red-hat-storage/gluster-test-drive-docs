@@ -487,10 +487,121 @@ Volume Information
 </code></p>
 
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
+<h3 id="volume-profiling">Volume Profiling</h3>
 <p>The <code>volume profile</code> command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.</p>
+<blockquote>
+<p><strong>NOTE</strong> The <code>volume profile</code> tool consumes system resources when it is started. It is recommended that this only be enabled when needed for diagnostic purposes.</p>
+</blockquote>
 <p>Start profiling for the <strong>repvol</strong> volume.</p>
-<p>sudo gluster volume profile repvol start<br />
-Starting volume profile on repvol has been successful</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume profile repvol start</code></pre>
+
+
+<p><code>Starting volume profile on repvol has been successful</code></p>
+<p>Connect to node <strong>client1</strong> via SSH from node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
+
+
+<p>For your convenience, a script called <code>fopmaker.sh</code> has been included to generate some interesting file operations on the volume. Run the command, passing the <strong>repvol</strong> volume name to it.</p>
+<pre class="codehilite"><code class="language-bash">/home/gluster/fopmaker.sh repvol</code></pre>
+
+
+<p><code>Generating interesting file operations. Please wait...</code><br />
+<code>Done!</code></p>
+<p>Exit node <strong>client1</strong>, returning to node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<p>The <code>profile info</code> Gluster command will provide many statistics about the file operations performed on the individual bricks. The output can be lengthy, so only a truncated sample is included below.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume profile repvol info</code></pre>
+
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+------------------------------------
+Cumulative Stats:
+   Block Size:                  8b+                  32b+                  64b+ 
+ No. of Reads:                  135                     0                     0 
+No. of Writes:                  210                     7                     7
+
+   Block Size:                128b+                 256b+                 512b+ 
+ No. of Reads:                    0                     0                     0 
+No. of Writes:                  341                    20                    14 
+
+   Block Size:               1024b+                2048b+                4096b+ 
+ No. of Reads:                    0                     0                     0 
+No. of Writes:                  446                    11                     6 
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+<p>When finished, stop the volume profiling.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume profile repvol stop</code></pre>
+
+
+<p><code>Stopping volume profile on repvol has been successful</code></p>
+<h3 id="volume-top">Volume Top</h3>
+<p>The <code>volume top</code> command allows you to view the brick performance metrics, including read, write, file open calls, file read calls, file write calls, directory open calls, and directory real calls. The volume top command displays up to 100 results.</p>
+<p>There are many different data sets you can view with the <code>volume top</code> command. A couple of examples are included here, but feel free to try other command options. Lengthy command outputs have been truncated in the examples provided.</p>
+<blockquote>
+<p><strong>TIP</strong> Run the <code>sudo gluster volume top help</code> command to see a command reference.</p>
+</blockquote>
+<p>View the files with the highest read calls across all bricks in the <strong>repvol</strong> volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume top repvol read</code></pre>
+
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+Count       filename
+=======================
+5       /mydir/profile256
+2       /mydir/profile32/file32
+1       /mydir/rebalanceme199
+1       /mydir/rebalanceme198
+1       /mydir/rebalanceme196
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+<p>Running the above command without specifying a brick will return results for all bricks, and the output will be lenghty.</p>
+<p>View the files with the highest open calls on brick <em>rhgs3:/rhgs/brick_xvdc/repvol</em>.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume top repvol open brick rhgs3:/rhgs/brick_xvdc/repvol</code></pre>
+
+
+<p><code>
+Brick: rhgs3:/rhgs/brick_xvdc/repvol
+Current open fds: 0, Max open fds: 4, Max openfd time: 2016-11-02 18:51:09.259480
+Count       filename
+=======================
+3       /mydir/profile64k
+1       /mydir/rebalanceme199
+1       /mydir/rebalanceme198
+1       /mydir/rebalanceme194
+1       /mydir/rebalanceme190
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+<p>The <code>volume top</code> command can additionally perform some basic direct performance tests on the bricks.</p>
+<blockquote>
+<p><strong>NOTE</strong> Using the performance analysis functionality of the <code>volume top</code> command will impact the volume performance for users. It is recommended that this only be used for diagnostic purposes.</p>
+</blockquote>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume top repvol write-perf bs 4096 count 128 brick rhgs1:/rhgs/brick_xvdc/repvol</code></pre>
+
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+Throughput 1307.45 MBps time 0.0004 secs
+MBps Filename                                        Time                      
+==== ========                                        ====                      
+1081 /mydir/profile2k                                2016-11-02 19:19:41.113567
+ 365 /mydir/profile256                               2016-11-02 19:19:41.86411 
+ 148 /mydir/profile32/file32                         2016-11-02 19:40:57.134769
+  81 /mydir/profile256/file256                       2016-11-02 19:40:57.323656
+  66 /mydir/profile32                                2016-11-02 19:19:51.352239
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
 <h2 id="administration-of-volume-quotas">Administration of Volume Quotas</h2>
 <h1 id="end-of-module-3">End of Module 3</h1>
 <p>This concludes <strong>Gluster Test Drive Module 3 - Volume Operations and Administration</strong>. You may continue now with Module 4, or return at any time to access the modules in any order you wish.</p></div>
