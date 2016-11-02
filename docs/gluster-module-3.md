@@ -147,7 +147,7 @@ sudo gluster volume status repvol
 Confirm that the files you created at the client are visible on the brick backend.
 
 ```bash
- /rhgs/brick_xvdc/repvol/mydir | wc -l
+ls /rhgs/brick_xvdc/repvol/mydir | wc -l
 ```
 
 ``10``
