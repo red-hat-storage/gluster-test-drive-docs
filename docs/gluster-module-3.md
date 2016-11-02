@@ -318,9 +318,13 @@ cat ~/repvol-expand.conf
 ``volname=rhgs1:repvol``
 ``bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol``
 
+Use `gdeploy` to make the volume change.
+
 ```bash
 gdeploy -c ~/repvol-expand.conf 
 ```
+
+Take a look at the updated volume configuration. Note the changes to **Type** and **Number of Bricks**, as well as the additional bricks listed.
 
 ```bash
 sudo gluster volume info repvol
@@ -342,12 +346,16 @@ sudo gluster volume info repvol
 ``Options Reconfigured:``
 ``performance.readdir-ahead: on``
 
+Start the rebalance operation on the **repvol** volume.
+
 ```bash
 sudo gluster volume rebalance repvol start
 ```
 
 ``volume rebalance: repvol: success: Rebalance on repvol has been started successfully. Use rebalance status command to check status of the rebalance process.``
 ``ID: e13d3c36-9531-4411-98aa-c974de5e2219``
+
+Take a look at the status of the rebalance. If you run this command quickly after the `rebalance start` above you may catch the *localhost* in the *in progress* status, but due to the limited scale of the lab the rebalance may complete before you run this command and instead show the *completed* status for this node.
 
 ```bash
 sudo gluster volume rebalance repvol status
@@ -363,11 +371,15 @@ sudo gluster volume rebalance repvol status
 ``                                   rhgs6                0        0Bytes             0             0             0            completed               0.00``
 ``volume rebalance: repvol: success``
 
+Now take a look again at the count of files in the brick backend for **repvol** on node **rhgs1**. You will find that the number of files has reduced considerably.
+
 ```bash
 ls /rhgs/brick_xvdc/repvol/mydir | wc -l
 ```
 
 ``75``
+
+To further illustrate the effect of the rebalance, connect to node **rhgs5** via SSH and look at the file count in the brick backend there.
 
 ```bash
 ssh gluster@rhgs5
@@ -378,6 +390,16 @@ ls /rhgs/brick_xvdc/repvol/mydir | wc -l
 ```
 
 ``66``
+
+Return to node **rhgs1**.
+
+```bash
+exit
+```
+
+### The gstatus Command
+
+A good summary view of your volume is available through the `gstatus` command. Passing the `-l` flag to this command will also provide a visual of the volume layout in ASCII format, which can be very handy for understanding the distribute branching and replica pairing.
 
 ```bash
 sudo gstatus -v repvol -l -w
