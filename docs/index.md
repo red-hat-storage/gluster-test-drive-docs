@@ -13,7 +13,27 @@ Welcome to the **Red Hat Gluster Storage** Hands-on Test Drive. To make your Glu
 
 Gluster provides open, software-defined file storage that scales out as much as you need. You can easily and securely manage large, unstructured, and semi-structured data at a fraction of the cost of traditional, monolithic storage. And only Red Hat lets you deploy the same storage on premise; in private, public, or hybrid clouds; and in Linux® containers. You can read more about gluster here: <https://www.redhat.com/en/technologies/storage/gluster>
 
-## Test-Drive Prerequisites
+## About the Test Drive
+
+The **Red Hat Gluster Storage** Hands-on Test Drive is designed in a progressive modular format. Newcomers to Gluster will generally have the best experience by following the modules and steps in order. To faciliate skipping modules or resuming progress at a later date, the modules are also designed to be independent and not reliant on the activities of any preceeding module.
+
+While the guided lab processes is designed to offer a progressive educational experience, you are also encouraged to use the lab in a free-form manner to explore Gluster and its features. For your convenience, a reference of the lab resources is provided below.
+
+### Lab Resources
+
+| Lab Node  | Internal IP Address | Function               |
+|-----------|---------------------|------------------------|
+| rhgs1     | 10.100.1.11         | Local Gluster server 1 |
+| rhgs2     | 10.100.1.12         | Local Gluster server 2 |
+| rhgs3     | 10.100.1.13         | Local Gluster server 3 |
+| rhgs4     | 10.100.1.14         | Local Gluster server 4 |
+| rhgs5     | 10.100.1.15         | Local Gluster server 5 |
+| rhgs6     | 10.100.1.16         | Local Gluster server 6 |
+| client1   | 10.100.1.101        | RHEL client 1          |
+| client2   | 10.100.1.102        | RHEL client 2          |
+| winclient | 10.100.1.103        | Windows client         |
+
+## Test Drive Prerequisites
 
 ### SSH and RDP
 If you are a Windows user, you will need a Secure Shell client like *PuTTY* to connect to your instance. If you do not have it already, you can download the PuTTY client here: <http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe>
