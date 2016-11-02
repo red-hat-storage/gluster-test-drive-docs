@@ -138,8 +138,6 @@
         
             <li><a href="#volume-expansion-and-rebalance">Volume Expansion and Rebalance</a></li>
         
-            <li><a href="#changing-volume-configuration">Changing Volume Configuration</a></li>
-        
             <li><a href="#analyzing-volume-performance">Analyzing Volume Performance</a></li>
         
             <li><a href="#administration-of-volume-quotas">Administration of Volume Quotas</a></li>
@@ -159,7 +157,6 @@
 <ul>
 <li>Initiate and observe volume self-heal behavior</li>
 <li>Expand a distribute-replicate volume and observe rebalance</li>
-<li>Change volume configurations and view changes</li>
 <li>Understand the use of the <code>volume profile</code> command</li>
 <li>Understand the use of the <code>volume top</code> command</li>
 <li>Set and observe volume and directory quotas</li>
@@ -489,8 +486,17 @@ Volume Information
                                +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
 </code></p>
 
-<h2 id="changing-volume-configuration">Changing Volume Configuration</h2>
+<p><code>this is a test
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></p>
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
+<p>The <code>volume profile</code> command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.</p>
+<p>Start profiling for the <strong>repvol</strong> volume.</p>
+<p>sudo gluster volume profile repvol start<br />
+Starting volume profile on repvol has been successful</p>
 <h2 id="administration-of-volume-quotas">Administration of Volume Quotas</h2>
 <h1 id="end-of-module-3">End of Module 3</h1>
 <p>This concludes <strong>Gluster Test Drive Module 3 - Volume Operations and Administration</strong>. You may continue now with Module 4, or return at any time to access the modules in any order you wish.</p></div>
