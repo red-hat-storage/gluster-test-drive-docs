@@ -451,46 +451,44 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -v repvol -l -w</code></pre>
 
 
-<p><code>Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)</code><br />
-<code>Status: HEALTHY                      201.00 MiB(raw used)</code><br />
-<code>Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)</code><br />
-<code>OverCommit: No                Snapshots:   0</code><br />
-<code></code><br />
-<code>Volume Information</code><br />
-<code>repvol           UP - 6/6 bricks up - Distributed-Replicate</code><br />
-<code>Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)</code><br />
-<code>Snapshots: 0</code><br />
-<code>Self Heal:  6/ 6</code><br />
-<code>Tasks Active: None</code><br />
-<code>Protocols: glusterfs:on  NFS:on  SMB:on</code><br />
-<code>Gluster Connectivty: 7 hosts, 78 tcp connections</code><br />
-<code></code><br />
-<p><code>this is a test<br />
-    repvol---------- +<br />
-                     |<br />
-                Distribute (dht)<br />
-</code><br />
-<code>repvol---------- +</code><br />
-<code>|</code><br />
-<code>Distribute (dht)</code><br />
-<code>|</code><br />
-<code>+-- Replica Set0 (afr)</code><br />
-<code>|     |</code><br />
-<code>|     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
-<code>|     |</code><br />
-<code>|     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
-<code>|</code><br />
-<code>+-- Replica Set1 (afr)</code><br />
-<code>|     |</code><br />
-<code>|     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
-<code>|     |</code><br />
-<code>|     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
-<code>|</code><br />
-<code>+-- Replica Set2 (afr)</code><br />
-<code>|</code><br />
-<code>+--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code><br />
-<code>|</code><br />
-<code>+--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></p>
+<p><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      201.00 MiB(raw used)
+   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+    repvol           UP - 6/6 bricks up - Distributed-Replicate
+                     Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)
+                     Snapshots: 0
+                     Self Heal:  6/ 6
+                     Tasks Active: None
+                     Protocols: glusterfs:on  NFS:on  SMB:on
+                     Gluster Connectivty: 7 hosts, 78 tcp connections
+
+    repvol---------- +
+                     |
+                Distribute (dht)
+                         |
+                         +-- Replica Set0 (afr)
+                         |     |
+                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set1 (afr)
+                         |     |
+                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+</code></p>
+
 <h2 id="changing-volume-configuration">Changing Volume Configuration</h2>
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
 <h2 id="administration-of-volume-quotas">Administration of Volume Quotas</h2>
