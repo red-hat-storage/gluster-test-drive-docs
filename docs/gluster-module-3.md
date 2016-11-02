@@ -586,7 +586,76 @@ MBps Filename                                        Time
 
 
 
-## Administration of Volume Quotas
+## Administration of Directory Quotas
+
+### About Quotas
+
+Directory quotas allow you to set limits on disk space used by directories or the volume. Storage administrators can control the disk space utilization at the directory or the volume level, or both. This is particularly useful in cloud deployments to facilitate the use of utility billing models.
+
+```bash
+sudo gluster volume quota repvol enable
+```
+
+``volume quota : success``
+
+> **NOTE** Due to the limited scale of this lab and the distributed nature of Gluster volumes, it may be easy to exceed relatively low quota values. Because of this, and *only for the purpose of this lab*, you will set the quota timeout values to 0 below.
+
+```bash
+sudo gluster volume set repvol features.quota-timeout 0
+sudo gluster volume set repvol features.hard-timeout 0
+sudo gluster volume set repvol features.soft-timeout 0
+```
+
+> **NOTE** Directory quotas can only be set on directories that have previously been created by a Gluster client. Below you will set a quota on the **mydir** subdirectory of the **repvol** volume, which was created previously in the steps above. If this directory does not currently exist in your voulume, you will need to connect to **client1** and create it before proceeding.
+
+Set a quota hard limit of 200MB for the **mydir** subdirectory of the **repvol** volume, and then view the settings.
+
+```bash
+sudo gluster volume quota repvol limit-usage /mydir 200MB
+```
+
+``volume quota : success``
+
+```bash
+sudo gluster volume quota repvol list
+```
+
+<p><code>
+                  Path                   Hard-limit  Soft-limit      Used  Available  Soft-limit exceeded? Hard-limit exceeded?
+-------------------------------------------------------------------------------------------------------------------------------
+/mydir                                   200.0MB     80%(160.0MB)   82.4MB 117.6MB              No                   No
+</code></p>
+
+Connect again to node **client1** via SSH.
+
+```bash
+ssh gluster@client1
+```
+
+Attempt to create 200 10MB files in the **mydir** subdirectory of the volume. At some point during this command loop, the writes should fail with a **Disk quota exceeded** error message.
+
+```bash
+for i in {001..200}; do dd if=/dev/zero of=/rhgs/client/native/repvol/mydir/quota$i bs=1024k count=10; done
+```
+
+Exit **client1** returning to node **rhgs1**.
+
+```bash
+exit
+```
+
+Take another look at the `quota list` output for the volume, noting the quota limits exceeded.
+
+```bash
+sudo gluster volume quota repvol list
+```
+
+<p><code>
+                  Path                   Hard-limit  Soft-limit      Used  Available  Soft-limit exceeded? Hard-limit exceeded?
+-------------------------------------------------------------------------------------------------------------------------------
+/mydir                                   200.0MB     80%(160.0MB)  200.0MB  0Bytes             Yes                  Yes
+</code></p>
+
 
 
 # End of Module 3
