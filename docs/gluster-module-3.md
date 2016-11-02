@@ -31,19 +31,17 @@ Confirm the volume configuration.
 sudo gluster volume info repvol
 ```
 
-``
-Volume Name: repvol
-Type: Replicate
-Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f
-Status: Started
-Number of Bricks: 1 x 2 = 2
-Transport-type: tcp
-Bricks:
-Brick1: rhgs1:/rhgs/brick_xvdc/repvol
-Brick2: rhgs2:/rhgs/brick_xvdc/repvol
-Options Reconfigured:
-performance.readdir-ahead: on
-``
+``Volume Name: repvol``
+``Type: Replicate``
+``Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f``
+``Status: Started``
+``Number of Bricks: 1 x 2 = 2``
+``Transport-type: tcp``
+``Bricks:``
+``Brick1: rhgs1:/rhgs/brick_xvdc/repvol``
+``Brick2: rhgs2:/rhgs/brick_xvdc/repvol``
+``Options Reconfigured:``
+``performance.readdir-ahead: on``
 
 
 ## Volume Self-Healing
@@ -141,18 +139,16 @@ On node **rhgs2**, note that the `volume status` output only shows the processes
 sudo gluster volume status repvol
 ```
 
-``
-Status of volume: repvol
-Gluster process                             TCP Port  RDMA Port  Online  Pid
-------------------------------------------------------------------------------
-Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468
-NFS Server on localhost                     2049      0          Y       11490
-Self-heal Daemon on localhost               N/A       N/A        Y       11495
- 
-Task Status of Volume repvol
-------------------------------------------------------------------------------
-There are no active volume tasks
-``
+``Status of volume: repvol``
+``Gluster process                             TCP Port  RDMA Port  Online  Pid``
+``------------------------------------------------------------------------------``
+``Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468``
+``NFS Server on localhost                     2049      0          Y       11490``
+``Self-heal Daemon on localhost               N/A       N/A        Y       11495``
+`` `` 
+``Task Status of Volume repvol``
+``------------------------------------------------------------------------------``
+``There are no active volume tasks``
 
 Confirm that the files you created at the client are visible on the brick backend.
 
@@ -408,7 +404,7 @@ A good summary view of your volume is available through the `gstatus` command. P
 sudo gstatus -v repvol -l -w
 ```
 
-``
+<p><code> 
      Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
       Status: HEALTHY                      201.00 MiB(raw used)
    Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
@@ -444,7 +440,17 @@ Volume Information
                                +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
                                |
                                +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+</code></p>
+
 ``
+this is a test
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
+``
+
 
 
 ## Analyzing Volume Performance
