@@ -219,3 +219,20 @@ ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
 ```
 
 ``10``
+
+
+## Volume Expansion and Rebalance
+
+### About Rebalance
+
+
+## Changing Volume Configuration
+
+## Analyzing Volume Performance
+
+## Administration of Volume Quotas
+
+
+# End of Module 3
+
+This concludes **Gluster Test Drive Module 3 - Volume Operations and Administration**. You may continue now with Module 4, or return at any time to access the modules in any order you wish.
