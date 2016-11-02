@@ -7,7 +7,6 @@ Welcome to the Gluster Test Drive Module 3 - Volume Operations and Administratio
 
 - Initiate and observe volume self-heal behavior
 - Expand a distribute-replicate volume and observe rebalance
-- Change volume configurations and view changes
 - Understand the use of the `volume profile` command
 - Understand the use of the `volume top` command
 - Set and observe volume and directory quotas
@@ -445,9 +444,16 @@ Volume Information
 
 
 
-## Changing Volume Configuration
-
 ## Analyzing Volume Performance
+
+The `volume profile` command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.
+
+Start profiling for the **repvol** volume.
+
+sudo gluster volume profile repvol start
+Starting volume profile on repvol has been successful
+
+
 
 ## Administration of Volume Quotas
 
