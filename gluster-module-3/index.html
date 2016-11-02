@@ -294,11 +294,11 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <code>/mydir/healme009</code><br />
 <code>/mydir/healme010</code><br />
 <code>Number of entries: 12</code></p>
-<h3 id="triggering-the-self-heal">Triggering the Self-Heal</h3>
 <p>Return to lab node <strong>rhgs1</strong>.</p>
 <pre class="codehilite"><code class="language-bash">exit</code></pre>
 
 
+<h3 id="triggering-the-self-heal">Triggering the Self-Heal</h3>
 <p>Re-start the gluster services. Note that starting the <code>glusterd</code> management daemon will automatically start the <code>glusterfsd</code> brick and <code>glusterfs</code> supporting processes.</p>
 <pre class="codehilite"><code class="language-bash">sudo systemctl start glusterd.service</code></pre>
 
@@ -465,6 +465,11 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <code>Protocols: glusterfs:on  NFS:on  SMB:on</code><br />
 <code>Gluster Connectivty: 7 hosts, 78 tcp connections</code><br />
 <code></code><br />
+<p><code>this is a test<br /><br />
+    repvol---------- +<br /><br />
+                     |<br /><br />
+                Distribute (dht)<br /><br />
+</code><br />
 <code>repvol---------- +</code><br />
 <code>|</code><br />
 <code>Distribute (dht)</code><br />
