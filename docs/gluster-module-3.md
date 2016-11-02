@@ -237,13 +237,19 @@ In the lab modules so far you have worked separately with *Distributed* and *Rep
 
 ### Add Files to the repvol Volume
 
+From **rhgs1** connect via SSH to **client1**.
+
 ```bash
 ssh gluster@client1
 ```
 
+Add 200 new files to the **repvol** volume.
+
 ```bash
-for i in {001..200}; do echo rebalanceme$i > /rhgs/client/native/repvol/mydir/rebalanceme$i; done
+for i in {001..200}; do echo hello$i > /rhgs/client/native/repvol/mydir/rebalanceme$i; done
 ```
+
+Confim the file count from the client. Note that we added 10 files in the self-heal section above, so the total file count should be 210.
 
 ```bash
 ls /rhgs/client/native/repvol/mydir | wc -l
@@ -251,10 +257,13 @@ ls /rhgs/client/native/repvol/mydir | wc -l
 
 ``210``
 
+Exit **client1**, returning to node **rhgs1**.
+
 ```bash
 exit
 ```
 
+On node **rhgs1**, list the backend brick contents and notice that the file count matches that of the client's view of the volume. Currently, there is only one branch to the distribute set, so all files will be located on this brick and on its replica peer, **rhgs2**.
 
 ```bash
 ls /rhgs/brick_xvdc/repvol/mydir | wc -l
@@ -264,6 +273,8 @@ ls /rhgs/brick_xvdc/repvol/mydir | wc -l
 
 
 ### Expand the repvol Volume
+
+First, examine the existing configuration for the **repvol** volume. Notice in particular the **Type** and **Number of Bricks** fields.
 
 ```bash
 sudo gluster volume info repvol
@@ -280,6 +291,9 @@ sudo gluster volume info repvol
 ``Brick2: rhgs2:/rhgs/brick_xvdc/repvol``
 ``Options Reconfigured:``
 ``performance.readdir-ahead: on``
+
+
+You will use the `gdeploy` command to create the new brick backends for nodes rhgs3 through rhgs6, and to add these new bricks to the layout of the **repvol** volume. Take a look at the contents of the configuration file.
 
 ```bash
 cat ~/repvol-expand.conf
@@ -312,81 +326,98 @@ gdeploy -c ~/repvol-expand.conf
 sudo gluster volume info repvol
 ```
  
-Volume Name: repvol
-Type: Distributed-Replicate
-Volume ID: 2ec69e5b-0d04-4a3e-94c3-337b4302fbe8
-Status: Started
-Number of Bricks: 3 x 2 = 6
-Transport-type: tcp
-Bricks:
-Brick1: rhgs1:/rhgs/brick_xvdc/repvol
-Brick2: rhgs2:/rhgs/brick_xvdc/repvol
-Brick3: rhgs3:/rhgs/brick_xvdc/repvol
-Brick4: rhgs4:/rhgs/brick_xvdc/repvol
-Brick5: rhgs5:/rhgs/brick_xvdc/repvol
-Brick6: rhgs6:/rhgs/brick_xvdc/repvol
-Options Reconfigured:
-performance.readdir-ahead: on
+``Volume Name: repvol``
+``Type: Distributed-Replicate``
+``Volume ID: 2ec69e5b-0d04-4a3e-94c3-337b4302fbe8``
+``Status: Started``
+``Number of Bricks: 3 x 2 = 6``
+``Transport-type: tcp``
+``Bricks:``
+``Brick1: rhgs1:/rhgs/brick_xvdc/repvol``
+``Brick2: rhgs2:/rhgs/brick_xvdc/repvol``
+``Brick3: rhgs3:/rhgs/brick_xvdc/repvol``
+``Brick4: rhgs4:/rhgs/brick_xvdc/repvol``
+``Brick5: rhgs5:/rhgs/brick_xvdc/repvol``
+``Brick6: rhgs6:/rhgs/brick_xvdc/repvol``
+``Options Reconfigured:``
+``performance.readdir-ahead: on``
 
+```bash
 sudo gluster volume rebalance repvol start
-volume rebalance: repvol: success: Rebalance on repvol has been started successfully. Use rebalance status command to check status of the rebalance process.
-ID: e13d3c36-9531-4411-98aa-c974de5e2219
+```
 
+``volume rebalance: repvol: success: Rebalance on repvol has been started successfully. Use rebalance status command to check status of the rebalance process.``
+``ID: e13d3c36-9531-4411-98aa-c974de5e2219``
+
+```bash
 sudo gluster volume rebalance repvol status
-                                    Node Rebalanced-files          size       scanned      failures       skipped               status   run time in secs
-                               ---------      -----------   -----------   -----------   -----------   -----------         ------------     --------------
-                               localhost               79         1.1KB           210             0             0          in progress               1.00
-                                   rhgs2                0        0Bytes             0             0             0            completed               0.00
-                                   rhgs3                0        0Bytes             0             0             0            completed               0.00
-                                   rhgs4                0        0Bytes             0             0             0            completed               0.00
-                                   rhgs5                0        0Bytes             0             0             0            completed               0.00
-                                   rhgs6                0        0Bytes             0             0             0            completed               0.00
-volume rebalance: repvol: success
+```
 
+``                                    Node Rebalanced-files          size       scanned      failures       skipped               status   run time in secs``
+``                               ---------      -----------   -----------   -----------   -----------   -----------         ------------     --------------``
+``                               localhost               79         1.1KB           210             0             0          in progress               1.00``
+``                                   rhgs2                0        0Bytes             0             0             0            completed               0.00``
+``                                   rhgs3                0        0Bytes             0             0             0            completed               0.00``
+``                                   rhgs4                0        0Bytes             0             0             0            completed               0.00``
+``                                   rhgs5                0        0Bytes             0             0             0            completed               0.00``
+``                                   rhgs6                0        0Bytes             0             0             0            completed               0.00``
+``volume rebalance: repvol: success``
+
+```bash
 ls /rhgs/brick_xvdc/repvol/mydir | wc -l
-75
+```
 
+``75``
+
+```bash
 ssh gluster@rhgs5
-s /rhgs/brick_xvdc/repvol/mydir | wc -l
-66
+```
 
+```bash
+ls /rhgs/brick_xvdc/repvol/mydir | wc -l
+```
+
+``66``
+
+```bash
 sudo gstatus -v repvol -l -w
+```
  
-     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
-      Status: HEALTHY                      201.00 MiB(raw used)
-   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
-  OverCommit: No                Snapshots:   0
-
-Volume Information
-	repvol           UP - 6/6 bricks up - Distributed-Replicate
-	                 Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)
-	                 Snapshots: 0
-	                 Self Heal:  6/ 6
-	                 Tasks Active: None
-	                 Protocols: glusterfs:on  NFS:on  SMB:on
-	                 Gluster Connectivty: 7 hosts, 78 tcp connections
-
-	repvol---------- +
-	                 |
-                Distribute (dht)
-                         |
-                         +-- Replica Set0 (afr)
-                         |     |
-                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |     |
-                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |
-                         +-- Replica Set1 (afr)
-                         |     |
-                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |     |
-                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |
-                         +-- Replica Set2 (afr)
-                               |
-                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                               |
-                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+``     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)``
+``      Status: HEALTHY                      201.00 MiB(raw used)``
+``   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)``
+``  OverCommit: No                Snapshots:   0``
+`` ``
+``Volume Information``
+``	repvol           UP - 6/6 bricks up - Distributed-Replicate``
+``	                 Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)``
+``	                 Snapshots: 0``
+``	                 Self Heal:  6/ 6``
+``	                 Tasks Active: None``
+``	                 Protocols: glusterfs:on  NFS:on  SMB:on``
+``	                 Gluster Connectivty: 7 hosts, 78 tcp connections``
+`` ``
+``	repvol---------- +``
+``	                 |``
+``                Distribute (dht)``
+``                         |``
+``                         +-- Replica Set0 (afr)``
+``                         |     |``
+``                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+``                         |     |``
+``                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+``                         |``
+``                         +-- Replica Set1 (afr)``
+``                         |     |``
+``                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+``                         |     |``
+``                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+``                         |``
+``                         +-- Replica Set2 (afr)``
+``                               |``
+``                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+``                               |``
+``                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
 
 
 
