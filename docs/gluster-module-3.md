@@ -404,47 +404,44 @@ A good summary view of your volume is available through the `gstatus` command. P
 ```bash
 sudo gstatus -v repvol -l -w
 ```
- 
-``     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)``
-``      Status: HEALTHY                      201.00 MiB(raw used)``
-``   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)``
-``  OverCommit: No                Snapshots:   0``
-`` ``
-``Volume Information``
-``	repvol           UP - 6/6 bricks up - Distributed-Replicate``
-``	                 Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)``
-``	                 Snapshots: 0``
-``	                 Self Heal:  6/ 6``
-``	                 Tasks Active: None``
-``	                 Protocols: glusterfs:on  NFS:on  SMB:on``
-``	                 Gluster Connectivty: 7 hosts, 78 tcp connections``
-`` ``
-<p><code>this is a test
+
+<p><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      201.00 MiB(raw used)
+   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+	repvol           UP - 6/6 bricks up - Distributed-Replicate
+	                 Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)
+	                 Snapshots: 0
+	                 Self Heal:  6/ 6
+	                 Tasks Active: None
+	                 Protocols: glusterfs:on  NFS:on  SMB:on
+	                 Gluster Connectivty: 7 hosts, 78 tcp connections
+
 	repvol---------- +
 	                 |
                 Distribute (dht)
-</code>
-``	repvol---------- +``
-``	                 |``
-``                Distribute (dht)``
-``                         |``
-``                         +-- Replica Set0 (afr)``
-``                         |     |``
-``                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
-``                         |     |``
-``                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
-``                         |``
-``                         +-- Replica Set1 (afr)``
-``                         |     |``
-``                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
-``                         |     |``
-``                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
-``                         |``
-``                         +-- Replica Set2 (afr)``
-``                               |``
-``                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
-``                               |``
-``                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB ``
+                         |
+                         +-- Replica Set0 (afr)
+                         |     |
+                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set1 (afr)
+                         |     |
+                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+</code></p>
 
 
 
