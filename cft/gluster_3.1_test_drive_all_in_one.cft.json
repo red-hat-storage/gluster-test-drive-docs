@@ -1806,7 +1806,19 @@
               "cat /home/gluster/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/gluster/.ssh/authorized_keys\n",
               "chown gluster:gluster /home/gluster/.ssh/authorized_keys\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+              "cat << EOF > /home/gluster/fopmaker.sh\n",
+              "#!/bin/bash\n",
+              "echo 'Generating interesting file operations. Please wait...'\n",
+              "for s in 32 256 2k 16k 64k; do \n",
+              "  mkdir /rhgs/client/native/${1}/mydir/profile${s} >/dev/null 2>&1\n",
+              "  dd if=/dev/zero of=/rhgs/client/native/${1}/mydir/profile${s}/file$s bs=$s count=1024 >/dev/null 2>&1\n",
+              "  dd if=/rhgs/client/native/${1}/mydir/profile${s}/file$s bs=$s >/dev/null 2>&1\n",
+              "  find /rhgs/client/native/${1}/mydir -name *${s} | xargs stat - >/dev/null 2>&1\n",
+              "done\n",
+              "echo 'Done!'\n",
+              "EOF\n",
+              "chmod 755 /home/gluster/fopmaker.sh\n"
             ]]
           }
         }
@@ -1910,7 +1922,19 @@
               "cat /home/gluster/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/gluster/.ssh/authorized_keys\n",
               "chown gluster:gluster /home/gluster/.ssh/authorized_keys\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+              "cat << EOF > /home/gluster/fopmaker.sh\n",
+              "#!/bin/bash\n",
+              "echo 'Generating interesting file operations. Please wait...'\n",
+              "for s in 32 256 2k 16k 64k; do \n",
+              "  mkdir /rhgs/client/native/${1}/mydir/profile${s} >/dev/null 2>&1\n",
+              "  dd if=/dev/zero of=/rhgs/client/native/${1}/mydir/profile${s}/file$s bs=$s count=1024 >/dev/null 2>&1\n",
+              "  dd if=/rhgs/client/native/${1}/mydir/profile${s}/file$s bs=$s >/dev/null 2>&1\n",
+              "  find /rhgs/client/native/${1}/mydir -name *${s} | xargs stat - >/dev/null 2>&1\n",
+              "done\n",
+              "echo 'Done!'\n",
+              "EOF\n",
+              "chmod 755 /home/gluster/fopmaker.sh\n"
             ]]
           }
         }

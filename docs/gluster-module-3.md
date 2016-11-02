@@ -453,6 +453,13 @@ Start profiling for the **repvol** volume.
 sudo gluster volume profile repvol start
 Starting volume profile on repvol has been successful
 
+ssh gluster@client1
+
+for s in 32 256 2k 16k 64k; do dd if=/dev/zero of=/rhgs/client/native/repvol/mydir/profile$s bs=$s count=1000; dd if=/rhgs/client/native/repvol/mydir/profile$s bs=$s > /dev/null; done
+
+exit
+
+
 
 
 ## Administration of Volume Quotas
