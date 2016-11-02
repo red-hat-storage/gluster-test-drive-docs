@@ -404,7 +404,7 @@ A good summary view of your volume is available through the `gstatus` command. P
 sudo gstatus -v repvol -l -w
 ```
 
-``
+<p><code> 
      Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
       Status: HEALTHY                      201.00 MiB(raw used)
    Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
@@ -440,6 +440,15 @@ Volume Information
                                +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
                                |
                                +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+</code></p>
+
+``
+this is a test
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
 ``
 
 
