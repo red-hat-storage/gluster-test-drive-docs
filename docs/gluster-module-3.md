@@ -20,8 +20,16 @@ Connect to the **rhgs1** server instance using its public IP address from the **
 ssh gluster@<rhgs1PublicIP>
 ```
 
-### If Needed, Create the Volume
-If you have not already done so as part of **Module 2**, deploy the **repvol** volume using the provided gdeploy configuraiton file.
+### If Needed, Peer the Nodes and Create the repvol Volume
+If you have not already done so as part of **Module 2**, peer all of the Gluster lab nodes and deploy the **repvol** volume using the provided gdeploy configuraiton file.
+
+```bash
+sudo gluster peer probe rhgs2
+sudo gluster peer probe rhgs3
+sudo gluster peer probe rhgs4
+sudo gluster peer probe rhgs5
+sudo gluster peer probe rhgs6
+```
 
 ```bash
 gdeploy -c ~/repvol.conf
@@ -50,6 +58,8 @@ sudo gluster volume info repvol
 ### About Self-Healing
 A Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.
 
+There are two types of self-heal that operate concurrently: *client-side* and *server-side* (also known as *proactive*). Client-side heals are triggered when a client performs a file operation on a file or directory marked as needing healed. Server-side heals are managed by background processes that run on each Gluster node, periodically scouring the bricks and healing any files that they find as marked.
+
 ### Offlining a Brick
 Your **repvol** volume has two bricks and a replication value of 2, and therefore a single replica set between bricks on nodes **rhgs1** and **rhgs2**. On node **rhgs1** you will stop all Gluster services and processes to ensure its bricks are offline.
 
@@ -73,6 +83,8 @@ ssh gluster@client1
 ```
 
 If you did not already mount the **repvol** volume as part of Module 2, do it now.
+
+> *NOTE* Below we mount the volume on **client1** using node **rhgs2** as the server because the Gluster services on node **rhgs1** were offlined above.
 
 ```bash
 sudo mkdir -p /rhgs/client/native/repvol
@@ -224,6 +236,30 @@ ls /rhgs/brick_xvdc/repvol/mydir/ | wc -l
 ## Volume Expansion and Rebalance
 
 ### About Rebalance
+When a Gluster volume is scaled horizontally by adding additional bricks, the overall architecture of the volume changes fundamentally and affects data placement by the *Distributed Hash Algorithm*. New file writes can easily account for the new bricks by including them in the random file placement calculation. However, any existing files will remain on their original bricks until a **rebalance** is initiated by the administrator.
+
+A rebalance triggers a re-calculation of data placement for existing files in the volume. A background operation then takes responsibility for moving the files to their new bricks, as needed. This, of course, is one of the heavier operations that Gluster performs, consuming additional system resources across the trusted pool until the rebalance is complete.
+
+### About Distributed-Replicated Volumes
+In the lab modules so far you have worked separately with *Distributed* and *Replicated* volumes. Here you will expand your **repvol** volume by adding additional bricks. The replica count remains 2, meaning that every file is written synchronously to two bricks. By adding additional bricks (which you must do in sets of 2 to maintain the replica count), you are creating a distribution set out of multiple replica sets. Upon a file write, first a hashing calculation will be made to determine under which branch of the distribute set to place the file, then the write is made synchronously to the replica peers in that branch. This will be further illustrated in the commands below.
+
+### Expand the repvol Volume
+
+sudo gluster volume info repvol
+ 
+Volume Name: repvol
+Type: Replicate
+Volume ID: 2ec69e5b-0d04-4a3e-94c3-337b4302fbe8
+Status: Started
+Number of Bricks: 1 x 2 = 2
+Transport-type: tcp
+Bricks:
+Brick1: rhgs1:/rhgs/brick_xvdc/repvol
+Brick2: rhgs2:/rhgs/brick_xvdc/repvol
+Options Reconfigured:
+performance.readdir-ahead: on
+
+
 
 
 ## Changing Volume Configuration
