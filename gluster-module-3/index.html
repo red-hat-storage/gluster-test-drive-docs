@@ -448,50 +448,43 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -v repvol -l -w</code></pre>
 
 
-<p><code> 
-     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
-      Status: HEALTHY                      201.00 MiB(raw used)
-   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
-  OverCommit: No                Snapshots:   0
-
-Volume Information
-    repvol           UP - 6/6 bricks up - Distributed-Replicate
-                     Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)
-                     Snapshots: 0
-                     Self Heal:  6/ 6
-                     Tasks Active: None
-                     Protocols: glusterfs:on  NFS:on  SMB:on
-                     Gluster Connectivty: 7 hosts, 78 tcp connections
-
-    repvol---------- +
+<p>``<br />
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)<br />
+      Status: HEALTHY                      201.00 MiB(raw used)<br />
+   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)<br />
+  OverCommit: No                Snapshots:   0</p>
+<p>Volume Information<br />
+    repvol           UP - 6/6 bricks up - Distributed-Replicate<br />
+                     Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)<br />
+                     Snapshots: 0<br />
+                     Self Heal:  6/ 6<br />
+                     Tasks Active: None<br />
+                     Protocols: glusterfs:on  NFS:on  SMB:on<br />
+                     Gluster Connectivty: 7 hosts, 78 tcp connections</p>
+<pre class="codehilite"><code>repvol---------- +
+                 |
+            Distribute (dht)
                      |
-                Distribute (dht)
-                         |
-                         +-- Replica Set0 (afr)
-                         |     |
-                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |     |
-                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |
-                         +-- Replica Set1 (afr)
-                         |     |
-                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |     |
-                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                         |
-                         +-- Replica Set2 (afr)
-                               |
-                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                               |
-                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-</code></p>
+                     +-- Replica Set0 (afr)
+                     |     |
+                     |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                     |     |
+                     |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                     |
+                     +-- Replica Set1 (afr)
+                     |     |
+                     |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                     |     |
+                     |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                     |
+                     +-- Replica Set2 (afr)
+                           |
+                           +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                           |
+                           +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></pre>
 
-<p><code>this is a test
-                         +-- Replica Set2 (afr)
-                               |
-                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
-                               |
-                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></p>
+
+<p>``</p>
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
 <p>The <code>volume profile</code> command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.</p>
 <p>Start profiling for the <strong>repvol</strong> volume.</p>
