@@ -136,8 +136,6 @@
         
             <li><a href="#volume-self-healing">Volume Self-Healing</a></li>
         
-            <li><a href="#task-status-of-volume-repvol">Task Status of Volume repvol</a></li>
-        
             <li><a href="#volume-expansion-and-rebalance">Volume Expansion and Rebalance</a></li>
         
             <li><a href="#analyzing-volume-performance">Analyzing Volume Performance</a></li>
@@ -178,17 +176,17 @@
 <pre class="codehilite"><code class="language-bash">sudo gluster volume info repvol</code></pre>
 
 
-<p><code>Volume Name: repvol
-Type: Replicate
-Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f
-Status: Started
-Number of Bricks: 1 x 2 = 2
-Transport-type: tcp
-Bricks:
-Brick1: rhgs1:/rhgs/brick_xvdc/repvol
-Brick2: rhgs2:/rhgs/brick_xvdc/repvol
-Options Reconfigured:
-performance.readdir-ahead: on</code></p>
+<p><code>Volume Name: repvol</code><br />
+<code>Type: Replicate</code><br />
+<code>Volume ID: 6fb61bd8-4642-44e9-a5ec-4f15c8740b6f</code><br />
+<code>Status: Started</code><br />
+<code>Number of Bricks: 1 x 2 = 2</code><br />
+<code>Transport-type: tcp</code><br />
+<code>Bricks:</code><br />
+<code>Brick1: rhgs1:/rhgs/brick_xvdc/repvol</code><br />
+<code>Brick2: rhgs2:/rhgs/brick_xvdc/repvol</code><br />
+<code>Options Reconfigured:</code><br />
+<code>performance.readdir-ahead: on</code></p>
 <h2 id="volume-self-healing">Volume Self-Healing</h2>
 <h3 id="about-self-healing">About Self-Healing</h3>
 <p>A Gluster replicated volume maintains multiple copies of files synchronously on the volume bricks. This can provide high availability, load balancing, and increased read throughput. When a member of a replica set becomes unavailable for any reason, Gluster tracks the changes made to the online bricks in order to facilitate a set of self-healing processes when the offline bricks return to service.</p>
@@ -257,16 +255,16 @@ sudo chmod 777 /rhgs/client/native/repvol/mydir</code></pre>
 <pre class="codehilite"><code class="language-bash">sudo gluster volume status repvol</code></pre>
 
 
-<p>``<br />
-Status of volume: repvol<br />
-Gluster process                             TCP Port  RDMA Port  Online  Pid</p>
-<hr />
-<p>Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468<br />
-NFS Server on localhost                     2049      0          Y       11490<br />
-Self-heal Daemon on localhost               N/A       N/A        Y       11495</p>
-<h2 id="task-status-of-volume-repvol">Task Status of Volume repvol</h2>
-<p>There are no active volume tasks<br />
-``</p>
+<p><code>Status of volume: repvol</code><br />
+<code>Gluster process                             TCP Port  RDMA Port  Online  Pid</code><br />
+<code>------------------------------------------------------------------------------</code><br />
+<code>Brick rhgs2:/rhgs/brick_xvdc/repvol         49152     0          Y       11468</code><br />
+<code>NFS Server on localhost                     2049      0          Y       11490</code><br />
+<code>Self-heal Daemon on localhost               N/A       N/A        Y       11495</code><br />
+<code></code> <br />
+<code>Task Status of Volume repvol</code><br />
+<code>------------------------------------------------------------------------------</code><br />
+<code>There are no active volume tasks</code></p>
 <p>Confirm that the files you created at the client are visible on the brick backend.</p>
 <pre class="codehilite"><code class="language-bash">ls /rhgs/brick_xvdc/repvol/mydir | wc -l</code></pre>
 
@@ -450,43 +448,50 @@ Self-heal Daemon on localhost               N/A       N/A        Y       11495</
 <pre class="codehilite"><code class="language-bash">sudo gstatus -v repvol -l -w</code></pre>
 
 
-<p>``<br />
-     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)<br />
-      Status: HEALTHY                      201.00 MiB(raw used)<br />
-   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)<br />
-  OverCommit: No                Snapshots:   0</p>
-<p>Volume Information<br />
-    repvol           UP - 6/6 bricks up - Distributed-Replicate<br />
-                     Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)<br />
-                     Snapshots: 0<br />
-                     Self Heal:  6/ 6<br />
-                     Tasks Active: None<br />
-                     Protocols: glusterfs:on  NFS:on  SMB:on<br />
-                     Gluster Connectivty: 7 hosts, 78 tcp connections</p>
-<pre class="codehilite"><code>repvol---------- +
-                 |
-            Distribute (dht)
-                     |
-                     +-- Replica Set0 (afr)
-                     |     |
-                     |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                     |     |
-                     |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                     |
-                     +-- Replica Set1 (afr)
-                     |     |
-                     |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                     |     |
-                     |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                     |
-                     +-- Replica Set2 (afr)
-                           |
-                           +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
-                           |
-                           +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></pre>
+<p><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      201.00 MiB(raw used)
+   Glusterfs: 3.7.5                         30.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
 
+Volume Information
+    repvol           UP - 6/6 bricks up - Distributed-Replicate
+                     Capacity: (0% used) 100.00 MiB/30.00 GiB (used/total)
+                     Snapshots: 0
+                     Self Heal:  6/ 6
+                     Tasks Active: None
+                     Protocols: glusterfs:on  NFS:on  SMB:on
+                     Gluster Connectivty: 7 hosts, 78 tcp connections
 
-<p>``</p>
+    repvol---------- +
+                     |
+                Distribute (dht)
+                         |
+                         +-- Replica Set0 (afr)
+                         |     |
+                         |     +--rhgs1:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs2:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set1 (afr)
+                         |     |
+                         |     +--rhgs3:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |     |
+                         |     +--rhgs4:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                         |
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB 
+</code></p>
+
+<p><code>this is a test
+                         +-- Replica Set2 (afr)
+                               |
+                               +--rhgs5:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB
+                               |
+                               +--rhgs6:/rhgs/brick_xvdc/repvol(UP) 33.00 MiB/10.00 GiB</code></p>
 <h2 id="analyzing-volume-performance">Analyzing Volume Performance</h2>
 <p>The <code>volume profile</code> command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.</p>
 <p>Start profiling for the <strong>repvol</strong> volume.</p>
