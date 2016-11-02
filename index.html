@@ -129,7 +129,9 @@
         
             <li><a href="#what-is-gluster">What is Gluster?</a></li>
         
-            <li><a href="#test-drive-prerequisites">Test-Drive Prerequisites</a></li>
+            <li><a href="#about-the-test-drive">About the Test Drive</a></li>
+        
+            <li><a href="#test-drive-prerequisites">Test Drive Prerequisites</a></li>
         
             <li><a href="#getting-to-know-your-lab-environment">Getting to Know Your Lab Environment</a></li>
         
@@ -152,7 +154,67 @@
 </ul>
 <h2 id="what-is-gluster">What is Gluster?</h2>
 <p>Gluster provides open, software-defined file storage that scales out as much as you need. You can easily and securely manage large, unstructured, and semi-structured data at a fraction of the cost of traditional, monolithic storage. And only Red Hat lets you deploy the same storage on premise; in private, public, or hybrid clouds; and in Linux® containers. You can read more about gluster here: <a href="https://www.redhat.com/en/technologies/storage/gluster">https://www.redhat.com/en/technologies/storage/gluster</a></p>
-<h2 id="test-drive-prerequisites">Test-Drive Prerequisites</h2>
+<h2 id="about-the-test-drive">About the Test Drive</h2>
+<p>The <strong>Red Hat Gluster Storage</strong> Hands-on Test Drive is designed in a progressive modular format. Newcomers to Gluster will generally have the best experience by following the modules and steps in order. To faciliate skipping modules or resuming progress at a later date, the modules are also designed to be independent and not reliant on the activities of any preceeding module.</p>
+<p>While the guided lab processes is designed to offer a progressive educational experience, you are also encouraged to use the lab in a free-form manner to explore Gluster and its features. For your convenience, a reference of the lab resources is provided below.</p>
+<h3 id="lab-resources">Lab Resources</h3>
+<table>
+<thead>
+<tr>
+<th>Lab Node</th>
+<th>Internal IP Address</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rhgs1</td>
+<td>10.100.1.11</td>
+<td>Local Gluster server 1</td>
+</tr>
+<tr>
+<td>rhgs2</td>
+<td>10.100.1.12</td>
+<td>Local Gluster server 2</td>
+</tr>
+<tr>
+<td>rhgs3</td>
+<td>10.100.1.13</td>
+<td>Local Gluster server 3</td>
+</tr>
+<tr>
+<td>rhgs4</td>
+<td>10.100.1.14</td>
+<td>Local Gluster server 4</td>
+</tr>
+<tr>
+<td>rhgs5</td>
+<td>10.100.1.15</td>
+<td>Local Gluster server 5</td>
+</tr>
+<tr>
+<td>rhgs6</td>
+<td>10.100.1.16</td>
+<td>Local Gluster server 6</td>
+</tr>
+<tr>
+<td>client1</td>
+<td>10.100.1.101</td>
+<td>RHEL client 1</td>
+</tr>
+<tr>
+<td>client2</td>
+<td>10.100.1.102</td>
+<td>RHEL client 2</td>
+</tr>
+<tr>
+<td>winclient</td>
+<td>10.100.1.103</td>
+<td>Windows client</td>
+</tr>
+</tbody>
+</table>
+<h2 id="test-drive-prerequisites">Test Drive Prerequisites</h2>
 <h3 id="ssh-and-rdp">SSH and RDP</h3>
 <p>If you are a Windows user, you will need a Secure Shell client like <em>PuTTY</em> to connect to your instance. If you do not have it already, you can download the PuTTY client here: <a href="http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe">http://the.earth.li/~sgtatham/putty/latest/x86/putty.exe</a></p>
 <p>Mac and Linux users, you will use your preferred terminal application (this should already be installed on your machine). For accessing the Windows lab client system interface via RDP, you will need a RDP client program such as <em>Vinagre</em> on Linux or the <em>Microsoft Remote Desktop</em> client for Mac. Vinagre is likely available for your Linux distribution using your standard package manager. You can download the Mac RDP client here: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=18140">https://www.microsoft.com/en-us/download/details.aspx?id=18140</a></p>
