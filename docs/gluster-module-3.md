@@ -7,8 +7,7 @@ Welcome to the Gluster Test Drive Module 3 - Volume Operations and Administratio
 
 - Initiate and observe volume self-heal behavior
 - Expand a distribute-replicate volume and observe rebalance
-- Understand the use of the `volume profile` command
-- Understand the use of the `volume top` command
+- Understand basic brick monitoring and performance diagnostics
 - Set and observe volume and directory quotas
 
 ## Lab Setup
