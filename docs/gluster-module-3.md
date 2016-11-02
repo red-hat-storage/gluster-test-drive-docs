@@ -446,19 +446,144 @@ Volume Information
 
 ## Analyzing Volume Performance
 
+### Volume Profiling
+
 The `volume profile` command provides an interface to get the per-brick or NFS server I/O information for each File Operation (FOP) of a volume. This information helps in identifying the bottlenecks in the storage system.
+
+> **NOTE** The `volume profile` tool consumes system resources when it is started. It is recommended that this only be enabled when needed for diagnostic purposes.
 
 Start profiling for the **repvol** volume.
 
+```bash
 sudo gluster volume profile repvol start
-Starting volume profile on repvol has been successful
+```
 
+``Starting volume profile on repvol has been successful``
+
+Connect to node **client1** via SSH from node **rhgs1**.
+
+```bash
 ssh gluster@client1
+```
 
-for s in 32 256 2k 16k 64k; do dd if=/dev/zero of=/rhgs/client/native/repvol/mydir/profile$s bs=$s count=1000; dd if=/rhgs/client/native/repvol/mydir/profile$s bs=$s > /dev/null; done
+For your convenience, a script called `fopmaker.sh` has been included to generate some interesting file operations on the volume. Run the command, passing the **repvol** volume name to it.
 
+```bash
+/home/gluster/fopmaker.sh repvol
+```
+
+``Generating interesting file operations. Please wait...``
+``Done!``
+
+Exit node **client1**, returning to node **rhgs1**.
+
+```bash
 exit
+```
 
+The `profile info` Gluster command will provide many statistics about the file operations performed on the individual bricks. The output can be lengthy, so only a truncated sample is included below.
+
+```bash
+sudo gluster volume profile repvol info
+```
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+------------------------------------
+Cumulative Stats:
+   Block Size:                  8b+                  32b+                  64b+ 
+ No. of Reads:                  135                     0                     0 
+No. of Writes:                  210                     7                     7 
+
+   Block Size:                128b+                 256b+                 512b+ 
+ No. of Reads:                    0                     0                     0 
+No. of Writes:                  341                    20                    14 
+ 
+   Block Size:               1024b+                2048b+                4096b+ 
+ No. of Reads:                    0                     0                     0 
+No. of Writes:                  446                    11                     6 
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+When finished, stop the volume profiling.
+ 
+```bash
+sudo gluster volume profile repvol stop
+```
+
+``Stopping volume profile on repvol has been successful ``
+
+
+### Volume Top
+The `volume top` command allows you to view the brick performance metrics, including read, write, file open calls, file read calls, file write calls, directory open calls, and directory real calls. The volume top command displays up to 100 results.
+
+There are many different data sets you can view with the `volume top` command. A couple of examples are included here, but feel free to try other command options. Lengthy command outputs have been truncated in the examples provided.
+
+> **TIP** Run the `sudo gluster volume top help` command to see a command reference.
+
+View the files with the highest read calls across all bricks in the **repvol** volume.
+
+```bash
+sudo gluster volume top repvol read
+```
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+Count		filename
+=======================
+5		/mydir/profile256
+2		/mydir/profile32/file32
+1		/mydir/rebalanceme199
+1		/mydir/rebalanceme198
+1		/mydir/rebalanceme196
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+Running the above command without specifying a brick will return results for all bricks, and the output will be lenghty.
+
+View the files with the highest open calls on brick *rhgs3:/rhgs/brick_xvdc/repvol*.
+
+```bash
+sudo gluster volume top repvol open brick rhgs3:/rhgs/brick_xvdc/repvol
+```
+
+<p><code>
+Brick: rhgs3:/rhgs/brick_xvdc/repvol
+Current open fds: 0, Max open fds: 4, Max openfd time: 2016-11-02 18:51:09.259480
+Count		filename
+=======================
+3		/mydir/profile64k
+1		/mydir/rebalanceme199
+1		/mydir/rebalanceme198
+1		/mydir/rebalanceme194
+1		/mydir/rebalanceme190
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
+
+The `volume top` command can additionally perform some basic direct performance tests on the bricks.
+
+> **NOTE** Using the performance analysis functionality of the `volume top` command will impact the volume performance for users. It is recommended that this only be used for diagnostic purposes.
+
+```bash
+sudo gluster volume top repvol write-perf bs 4096 count 128 brick rhgs1:/rhgs/brick_xvdc/repvol
+```
+
+<p><code>
+Brick: rhgs1:/rhgs/brick_xvdc/repvol
+Throughput 1307.45 MBps time 0.0004 secs
+MBps Filename                                        Time                      
+==== ========                                        ====                      
+1081 /mydir/profile2k                                2016-11-02 19:19:41.113567
+ 365 /mydir/profile256                               2016-11-02 19:19:41.86411 
+ 148 /mydir/profile32/file32                         2016-11-02 19:40:57.134769
+  81 /mydir/profile256/file256                       2016-11-02 19:40:57.323656
+  66 /mydir/profile32                                2016-11-02 19:19:51.352239
+
+~~~ OUTPUT TRUNCATED ~~~
+</code></p>
 
 
 
