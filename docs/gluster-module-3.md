@@ -183,14 +183,14 @@ sudo gluster volume heal repvol info
 ``/mydir/healme010 ``
 ``Number of entries: 12``
 
-
-### Triggering the Self-Heal
-
 Return to lab node **rhgs1**.
 
 ```bash
 exit
 ```
+
+
+### Triggering the Self-Heal
 
 Re-start the gluster services. Note that starting the `glusterd` management daemon will automatically start the `glusterfsd` brick and `glusterfs` supporting processes.
 
