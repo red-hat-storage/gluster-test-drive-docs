@@ -419,6 +419,7 @@ sudo gstatus -v repvol -l -w
 ``	                 Protocols: glusterfs:on  NFS:on  SMB:on``
 ``	                 Gluster Connectivty: 7 hosts, 78 tcp connections``
 `` ``
+test::
         this is a test
 ``	repvol---------- +``
 ``	                 |``
