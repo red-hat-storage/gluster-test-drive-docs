@@ -9,6 +9,24 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Beta lab bug reporting header */
+div.navbar.navbar-default.navbar-fixed-top:before {
+    content: "BETA LAB - Please send any bug or documentation error reports to: dustin at redhat dot com";
+    white-space: pre;
+    display: block;
+    font-family: "Overpass","Open Sans","Helvetica Neue",sans-serif;
+    font-weight: 300;
+    color: #000000;
+    line-height: 80%;
+    margin-bottom: .5em;
+    margin-top: .5em;
+    text-align: center !important;
+    text-rendering: optimizeLegibility;
+    font-style: italic;
+    margin-left: 7.2em;
+    color: #fff;
+}
+
 div.col-md-9:before{
   content: "RED HAT \A STORAGE \A TEST DRIVE";
   white-space: pre;
