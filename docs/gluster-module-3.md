@@ -1,4 +1,3 @@
-# **THIS LAB IS A WORK IN PROGRESS**
 # Lab Guide <br/> Gluster Test Drive Module 3 <br/> Volume Operations and Administration
 
 ## Lab Agenda
