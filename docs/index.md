@@ -56,6 +56,8 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
 <ol start="2"><li>Click the <img src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png"> button in the navigation bar above to launch your lab. If you are prompted for a token, use the one distributed to you (or credits you've purchased).</li></ol>
 
+> **NOTE** It may take **up to 10 minutes** for your lab systems to start up before you can access them.
+
    A status bar will then show the progress of the lab environment creation process. Your lab resources may not be fully available until the process is complete.
 
    ![](http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image006.png)
