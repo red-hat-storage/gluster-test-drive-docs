@@ -1811,7 +1811,7 @@
               "#!/bin/bash\n",
               "echo 'Generating interesting file operations. Please wait...'\n",
               "for s in 32 256 2k 16k 64k; do \n",
-              "  mkdir /rhgs/client/native/\${1}/mydir/profile\${s} >/dev/null 2>&1\n",
+              "  mkdir /rhgs/client/native/\$\{1\}/mydir/profile\${s} >/dev/null 2>&1\n",
               "  dd if=/dev/zero of=/rhgs/client/native/\${1}/mydir/profile\${s}/file\$s bs=\$s count=1024 >/dev/null 2>&1\n",
               "  dd if=/rhgs/client/native/\${1}/mydir/profile\${s}/file\$s bs=\$s >/dev/null 2>&1\n",
               "  find /rhgs/client/native/\${1}/mydir -name *\${s} | xargs stat - >/dev/null 2>&1\n",
