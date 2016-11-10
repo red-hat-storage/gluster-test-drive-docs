@@ -63,7 +63,7 @@ You will use the **Ansible**-based deployment tool `gdeploy` in order to create 
 
 First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
 
-```null
+```ini
 [hosts]
 rhgs1
 rhgs2
@@ -77,7 +77,7 @@ rhgs6
 
 The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (**the block device should be xvdd**), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.
 
-```null
+```ini
 [backend-setup]
 devices=xvdd
 vgs=rhgs_vg3
@@ -91,7 +91,7 @@ brick_dirs=/rhgs/brick_xvdd/ecvol
 
 Next you define the specific architecture and configuration of the disperse volume you are creating.
 
-```null
+```ini
 [volume]
 action=create
 volname=ecvol
@@ -105,7 +105,7 @@ force=yes
 
 Finally, you can automatically mount the new `ecvol` volume to the client systems.
 
-```null
+```ini
 [clients]
 action=mount
 volname=ecvol
@@ -119,4 +119,74 @@ client_mount_points=/rhgs/client/native/ecvol
 
 ## Deploy and Review your Disperse Volume
 
+Using `gdeploy`, automate the deploymentof your `ecvol` volume.
 
+> **NOTE** Sudo is not needed for the `gdeploy` command.
+
+```bash
+gdeploy -c /home/gluster/ecvol.conf
+```
+
+When the deployment completes, you should find that you have a properly-configured and started disperse Gluster volume.
+
+```bash
+sudo gluster volume info ecvol
+```
+ 
+<div><code>
+Volume Name: ecvol
+Type: Disperse
+Volume ID: 981dddb3-d99d-47bb-821e-b6fcb918a4f9
+Status: Started
+Number of Bricks: 1 x (4 + 2) = 6
+Transport-type: tcp
+Bricks:
+Brick1: rhgs1:/rhgs/brick_xvdd/ecvol
+Brick2: rhgs2:/rhgs/brick_xvdd/ecvol
+Brick3: rhgs3:/rhgs/brick_xvdd/ecvol
+Brick4: rhgs4:/rhgs/brick_xvdd/ecvol
+Brick5: rhgs5:/rhgs/brick_xvdd/ecvol
+Brick6: rhgs6:/rhgs/brick_xvdd/ecvol
+Options Reconfigured:
+performance.readdir-ahead: on
+</code></div>
+
+Also take a look at the layout with the `gstatus` command.
+
+```bash
+sudo gstatus -l -w -v ecvol
+```
+
+<div><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      198.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+	ecvol            UP - 6/6 bricks up - Disperse
+	                 Capacity: (0% used) 132.00 MiB/40.00 GiB (used/total)
+	                 Snapshots: 0
+	                 Self Heal:  6/ 6
+	                 Tasks Active: None
+	                 Protocols: glusterfs:on  NFS:on  SMB:on
+	                 Gluster Connectivty: 8 hosts, 84 tcp connections
+
+	ecvol----------- +
+	                 |
+                Disperse (ida)
+                         |
+                         +-- Disperse set0 (ida)
+                               |
+                               +--rhgs1:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs2:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs3:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs4:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs5:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs6:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB
+</code></div>
