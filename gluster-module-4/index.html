@@ -142,7 +142,7 @@
         
             <li><a href="#deploy-and-review-your-disperse-volume">Deploy and Review your Disperse Volume</a></li>
         
-            <li><a href="#write-to-your-disperse-volume">Write to Your Disperse Volume</a></li>
+            <li><a href="#file-operations-on-a-disperse-volume">File Operations on a Disperse Volume</a></li>
         
     
     </ul>
@@ -310,8 +310,9 @@ Volume Information
                                +--rhgs6:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB
 </code></div>
 
-<h2 id="write-to-your-disperse-volume">Write to Your Disperse Volume</h2>
-<p>From rhgs1 connect via SSH to client1.</p>
+<h2 id="file-operations-on-a-disperse-volume">File Operations on a Disperse Volume</h2>
+<h3 id="create-files-from-the-client">Create Files from the Client</h3>
+<p>From <strong>rhgs1</strong> connect via SSH to <strong>client1</strong>.</p>
 <pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
@@ -325,7 +326,7 @@ Volume Information
 
 <p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
 <code>rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol</code></p>
-<p>Write a few 10MB files of <em>plain text</em> to the <code>ecvol</code> volume.</p>
+<p>Write a few 10MB files of <strong>plain text</strong> to the <code>ecvol</code> volume.</p>
 <pre class="codehilite"><code class="language-bash">sudo mkdir /rhgs/client/native/ecvol/mydir
 sudo chmod 777 /rhgs/client/native/ecvol/mydir/
 for i in {0..5}; do base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile$i; done</code></pre>
@@ -344,14 +345,16 @@ total 60M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
 </code></div>
 
+<p>Validate that you have created ASCII text files.</p>
 <pre class="codehilite"><code class="language-bash">file /rhgs/client/native/ecvol/mydir/ecfile0 </code></pre>
 
 
 <p><code>/rhgs/client/native/ecvol/mydir/ecfile0: ASCII text</code></p>
-<p>Return to lab node rhgs1.</p>
+<p>Return to lab node <strong>rhgs1</strong>.</p>
 <pre class="codehilite"><code class="language-bash">exit</code></pre>
 
 
+<p>Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
@@ -365,13 +368,18 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
+<p>Each one of these files in a fragment of the file created at the client combined with the parity data required to calculate the reassembly of the file.</p>
+<p>Note that the file types here are <code>data</code> instead of <code>ASCII text</code>.</p>
 <pre class="codehilite"><code class="language-bash">file /rhgs/brick_xvdd/ecvol/mydir/ecfile0 </code></pre>
 
 
 <p><code>/rhgs/brick_xvdd/ecvol/mydir/ecfile0: data</code></p>
+<h3 id="test-disperse-volume-resilliency">Test Disperse Volume Resilliency</h3>
+<p>Choose any 2 of the gluster nodes other than rhgs1 (rhgs2 through rhgs6), and stop all gluster processes on those nodes. <em>In the example here, we have chosen nodes rhgs2 and rhgs5.</em></p>
 <pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd&quot;; done</code></pre>
 
 
+<p>Take a look at the volume now with the <code>gstatus</code> tool. You will notice it is marked as <code>UNHEALTHY</code> and <code>DEGRADED</code>.</p>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -w -v ecvol</code></pre>
 
 
@@ -391,9 +399,11 @@ Volume Information
                      Gluster Connectivty: 6 hosts, 40 tcp connections
 </code></div>
 
-<pre class="codehilite"><code class="language-bash">ssh client1</code></pre>
+<p>Return again to <strong>client1</strong> via SSH.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
+<p>Perform file operations on the <code>ecvol</code> volume mount point to confirm that your data is still full accessible with the volume in a degraded state.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
 
 
@@ -429,6 +439,10 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 <pre class="codehilite"><code class="language-bash">cat /rhgs/client/native/ecvol/mydir/ecfile2 &gt; /dev/null</code></pre>
 
 
+<p>Create a new file.</p>
+<pre class="codehilite"><code class="language-bash">base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile6</code></pre>
+
+
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
 
 
@@ -443,6 +457,11 @@ total 70M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:29 ecfile6
 </code></div>
 
+<p>Return to lab node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<p>Note that the new file you created is available on node <strong>rhgs1</strong> where the Gluster processes were not shut down.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
@@ -457,9 +476,11 @@ total 18M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div>
 
+<p>Connect via ssh to one of the nodes on which you stopped the Gluster processes above.</p>
 <pre class="codehilite"><code class="language-bash">ssh rhgs2</code></pre>
 
 
+<p>Note that on this node the new file you created does not exist.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
@@ -473,9 +494,11 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
+<p>Re-start the Gluster services on the nodes where you stopped them above.</p>
 <pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl start glusterd.service&quot;; done</code></pre>
 
 
+<p>Confirm that the <code>ecvol</code> volume is no longer in a <code>DEGRADED</code> state.</p>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -w -v ecvol</code></pre>
 
 
@@ -495,6 +518,7 @@ Volume Information
                      Gluster Connectivty: 8 hosts, 84 tcp connections
 </code></div>
 
+<p>Allow a minute or two for the <em>self-heal daemon</em> to catch up, and then note that the new file you created is now available on this brick backend.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
@@ -507,7 +531,10 @@ total 18M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
-</code></div></div>
+</code></div>
+
+<p>Return to node <strong>rhgs1</strong>.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre></div>
         </div>
 
         <footer class="col-md-12">
