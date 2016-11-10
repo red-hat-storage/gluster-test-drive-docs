@@ -134,6 +134,10 @@
         
             <li><a href="#getting-started">Getting Started</a></li>
         
+            <li><a href="#lab-setup">Lab Setup</a></li>
+        
+            <li><a href="#about-disperse-volumes">About Disperse Volumes</a></li>
+        
     
     </ul>
 </div></div>
@@ -153,7 +157,33 @@
 <p>If you have not already done so, click the <img src="http://us-west-2-aws-training.s3.amazonaws.com/awsu-spl/spl02-working-ebs/media/image005.png"> button in the navigation bar above to launch your lab. If you are prompted for a token, use the one distributed to you (or credits you&rsquo;ve purchased).</p>
 <blockquote>
 <p><strong>NOTE</strong> It may take <strong>up to 10 minutes</strong> for your lab systems to start up before you can access them.</p>
-</blockquote></div>
+</blockquote>
+<h2 id="lab-setup">Lab Setup</h2>
+<h3 id="connect-to-the-lab">Connect to the Lab</h3>
+<p>Connect to the <strong>rhgs1</strong> server instance using its public IP address from the <strong>Addl. Info</strong> tab to the right (Linux/Mac example below).</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@&lt;rhgs1PublicIP&gt;</code></pre>
+
+
+<h2 id="about-disperse-volumes">About Disperse Volumes</h2>
+<p>Gluster disperse volumes utilize <strong>erasure coding</strong> technology to provide data protection with a lower overall infrastructure investment. Unlike standard replication, in which to protect <em>n</em> bricks against <em>r</em> failures you must invest in a total of <em>n+(n*r)</em> bricks, with erasure coding you can design for the same level of protection with an investment of only <em>n+(n/r)</em> or even less.</p>
+<p>For example, assume you need <em>n=4</em> bricks to hold your data set and you require protection from failure of <em>r=2</em> bricks. If you use standard <strong>replication</strong>, your investment in bricks will be <em>4+(4*2)</em> or <strong>12 total bricks</strong>. If instead you utilize <strong>erasure coding</strong>, your investment in bricks can be <em>4+(4/2)</em> or <strong>6 total bricks</strong>.</p>
+<p><img alt="" src="../images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png" /></p>
+<h3 id="erasure-coding-and-parity">Erasure Coding and Parity</h3>
+<p>Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of <em>data</em> and <em>parity</em> across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a <em>redundancy to data</em> ratio. For our lab, we will be using a 4:2 ratio &ndash; 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.</p>
+<blockquote>
+<p><strong>NOTE</strong> This functionality is very similar to RAID at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.</p>
+</blockquote>
+<p>When data is written to the disperse volume, it is broken into calculated chunks and written across all of the bricks in the disperse set. When data is read, it can be algorithmically reassembled from <strong>any n of the bricks where n is the number of data bricks in the set</strong>. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the data.</p>
+<h3 id="use-cases">Use Cases</h3>
+<p>Disperse volumes offer space-efficient and capacity-optimized architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.</p>
+<ul>
+<li>The overhead of the algorithms can lead to decreased performance for your data set, particularly for reads and for small files.</li>
+<li>The files are no longer stored in their whole original form on the brick backends, making offline or backend retrieval of data impossible.</li>
+</ul>
+<blockquote>
+<p><strong>NOTE</strong> Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and even sometimes improved.</p>
+</blockquote>
+<p>Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. <em>You should avoid using the NFS client with disperse volumes.</em></p></div>
         </div>
 
         <footer class="col-md-12">
