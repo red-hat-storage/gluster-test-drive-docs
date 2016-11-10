@@ -195,7 +195,7 @@
 </blockquote>
 <h3 id="hosts-section">Hosts Section</h3>
 <p>First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.</p>
-<pre class="codehilite"><code class="language-null">[hosts]
+<pre class="codehilite"><code class="language-ini">[hosts]
 rhgs1
 rhgs2
 rhgs3
@@ -206,7 +206,7 @@ rhgs6</code></pre>
 
 <h3 id="backend-section">Backend Section</h3>
 <p>The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (<strong>the block device should be xvdd</strong>), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.</p>
-<pre class="codehilite"><code class="language-null">[backend-setup]
+<pre class="codehilite"><code class="language-ini">[backend-setup]
 devices=xvdd
 vgs=rhgs_vg3
 pools=rhgs_thinpool3
@@ -217,7 +217,7 @@ brick_dirs=/rhgs/brick_xvdd/ecvol</code></pre>
 
 <h3 id="volume-section">Volume Section</h3>
 <p>Next you define the specific architecture and configuration of the disperse volume you are creating.</p>
-<pre class="codehilite"><code class="language-null">[volume]
+<pre class="codehilite"><code class="language-ini">[volume]
 action=create
 volname=ecvol
 disperse=yes
@@ -228,7 +228,7 @@ force=yes</code></pre>
 
 <h3 id="clients-section">Clients Section</h3>
 <p>Finally, you can automatically mount the new <code>ecvol</code> volume to the client systems.</p>
-<pre class="codehilite"><code class="language-null">[clients]
+<pre class="codehilite"><code class="language-ini">[clients]
 action=mount
 volname=ecvol
 hosts=client1,client2
@@ -239,7 +239,73 @@ client_mount_points=/rhgs/client/native/ecvol</code></pre>
 <blockquote>
 <p><strong>NOTE</strong> You can check your work against the provided <code>/home/gluster/example/ecvol.conf</code> file.</p>
 </blockquote>
-<h2 id="deploy-and-review-your-disperse-volume">Deploy and Review your Disperse Volume</h2></div>
+<h2 id="deploy-and-review-your-disperse-volume">Deploy and Review your Disperse Volume</h2>
+<p>Using <code>gdeploy</code>, automate the deploymentof your <code>ecvol</code> volume.</p>
+<blockquote>
+<p><strong>NOTE</strong> Sudo is not needed for the <code>gdeploy</code> command.</p>
+</blockquote>
+<pre class="codehilite"><code class="language-bash">gdeploy -c /home/gluster/ecvol.conf</code></pre>
+
+
+<p>When the deployment completes, you should find that you have a properly-configured and started disperse Gluster volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo gluster volume info ecvol</code></pre>
+
+
+<div><code>
+Volume Name: ecvol
+Type: Disperse
+Volume ID: 981dddb3-d99d-47bb-821e-b6fcb918a4f9
+Status: Started
+Number of Bricks: 1 x (4 + 2) = 6
+Transport-type: tcp
+Bricks:
+Brick1: rhgs1:/rhgs/brick_xvdd/ecvol
+Brick2: rhgs2:/rhgs/brick_xvdd/ecvol
+Brick3: rhgs3:/rhgs/brick_xvdd/ecvol
+Brick4: rhgs4:/rhgs/brick_xvdd/ecvol
+Brick5: rhgs5:/rhgs/brick_xvdd/ecvol
+Brick6: rhgs6:/rhgs/brick_xvdd/ecvol
+Options Reconfigured:
+performance.readdir-ahead: on
+</code></div>
+
+<p>Also take a look at the layout with the <code>gstatus</code> command.</p>
+<pre class="codehilite"><code class="language-bash">sudo gstatus -l -w -v ecvol</code></pre>
+
+
+<div><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      198.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+    ecvol            UP - 6/6 bricks up - Disperse
+                     Capacity: (0% used) 132.00 MiB/40.00 GiB (used/total)
+                     Snapshots: 0
+                     Self Heal:  6/ 6
+                     Tasks Active: None
+                     Protocols: glusterfs:on  NFS:on  SMB:on
+                     Gluster Connectivty: 8 hosts, 84 tcp connections
+
+    ecvol----------- +
+                     |
+                Disperse (ida)
+                         |
+                         +-- Disperse set0 (ida)
+                               |
+                               +--rhgs1:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs2:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs3:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs4:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs5:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
+                               |
+                               +--rhgs6:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB
+</code></div></div>
         </div>
 
         <footer class="col-md-12">
