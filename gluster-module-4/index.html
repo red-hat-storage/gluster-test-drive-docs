@@ -403,7 +403,7 @@ Volume Information
 <pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
-<p>Perform file operations on the <code>ecvol</code> volume mount point to confirm that your data is still full accessible with the volume in a degraded state.</p>
+<p>Perform file operations on the <code>ecvol</code> volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
 
 
@@ -439,7 +439,7 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 <pre class="codehilite"><code class="language-bash">cat /rhgs/client/native/ecvol/mydir/ecfile2 &gt; /dev/null</code></pre>
 
 
-<p>Create a new file.</p>
+<p>Create a new plain text file in the <code>ecvol</code> volume mount point.</p>
 <pre class="codehilite"><code class="language-bash">base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile6</code></pre>
 
 
