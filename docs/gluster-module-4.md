@@ -359,7 +359,7 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 cat /rhgs/client/native/ecvol/mydir/ecfile2 > /dev/null
 ```
 
-Create a new file.
+Create a new plain text file in the `ecvol` volume mount point.
 
 ```bash
 base64 /dev/urandom | head -c 10240k > /rhgs/client/native/ecvol/mydir/ecfile6
