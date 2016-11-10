@@ -70,6 +70,7 @@ rhgs2
 rhgs3
 rhgs4
 rhgs5
+rhgs6
 ```
 
 ### Backend Section
