@@ -1,4 +1,3 @@
-# **THIS LAB IS A WORK IN PROGRESS**
 # Lab Guide <br/> Gluster Test Drive Module 4 <br/> Disperse Volumes (Erasure Coding)
 
 ## Lab Agenda
@@ -478,3 +477,8 @@ Return to node **rhgs1**.
 ```bash
 exit
 ```
+
+
+# End of Module 4
+
+This concludes **Gluster Test Drive Module 4 - Disperse Volumes (Erasure Coding)**. You may continue now with Module 5, or return at any time to access the modules in any order you wish.
