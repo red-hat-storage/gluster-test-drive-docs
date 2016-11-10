@@ -138,6 +138,8 @@
         
             <li><a href="#about-disperse-volumes">About Disperse Volumes</a></li>
         
+            <li><a href="#build-your-gdeploy-configuration">Build your gdeploy Configuration</a></li>
+        
     
     </ul>
 </div></div>
@@ -169,21 +171,56 @@
 <p>For example, assume you need <em>n=4</em> bricks to hold your data set and you require protection from failure of <em>r=2</em> bricks. If you use standard <strong>replication</strong>, your investment in bricks will be <em>4+(4*2)</em> or <strong>12 total bricks</strong>. If instead you utilize <strong>erasure coding</strong>, your investment in bricks can be <em>4+(4/2)</em> or <strong>6 total bricks</strong>.</p>
 <p><img alt="" src="../images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png" /></p>
 <h3 id="erasure-coding-and-parity">Erasure Coding and Parity</h3>
-<p>Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of <em>data</em> and <em>parity</em> across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a <em>redundancy to data</em> ratio. For our lab, we will be using a 4:2 ratio &ndash; 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.</p>
+<p>Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of <em>data</em> and <em>parity</em> across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a <em>redundancy-to-data</em> ratio. For our lab, you will be using a 4:2 ratio &ndash; 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.</p>
 <blockquote>
-<p><strong>NOTE</strong> This functionality is very similar to RAID at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.</p>
+<p><strong>NOTE</strong> This functionality is very similar to how RAID works at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.</p>
 </blockquote>
-<p>When data is written to the disperse volume, it is broken into calculated chunks and written across all of the bricks in the disperse set. When data is read, it can be algorithmically reassembled from <strong>any n of the bricks where n is the number of data bricks in the set</strong>. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the data.</p>
+<p>When a file is written to the disperse volume, it is broken into calculated chunks of data and written across all of the bricks in the disperse set. When a file is read, it can be <strong>algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set</strong>. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.</p>
 <h3 id="use-cases">Use Cases</h3>
-<p>Disperse volumes offer space-efficient and capacity-optimized architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.</p>
+<p>Disperse volumes offer <em>space-efficient</em> and <em>capacity-optimized</em> storage architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.</p>
 <ul>
 <li>The overhead of the algorithms can lead to decreased performance for your data set, particularly for reads and for small files.</li>
 <li>The files are no longer stored in their whole original form on the brick backends, making offline or backend retrieval of data impossible.</li>
 </ul>
 <blockquote>
-<p><strong>NOTE</strong> Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and even sometimes improved.</p>
+<p><strong>NOTE</strong> Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved.</p>
 </blockquote>
-<p>Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. <em>You should avoid using the NFS client with disperse volumes.</em></p></div>
+<p>Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. <em>You should avoid using the NFS client with disperse volumes.</em></p>
+<h2 id="build-your-gdeploy-configuration">Build your gdeploy Configuration</h2>
+<p>You will use the <strong>Ansible</strong>-based deployment tool <code>gdeploy</code> in order to create your disperse volume. For this, you will need to build a custom configuration file. Store this file as <code>/home/gluster/ecvol.conf</code>.</p>
+<blockquote>
+<p><strong>NOTE</strong> For your convenience, the <code>vim</code> and <code>emacs</code> editing tools are installed on all lab systems.</p>
+</blockquote>
+<h3 id="hosts-section">Hosts Section</h3>
+<p>First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.</p>
+<pre class="codehilite"><code>[hosts]
+rhgs1
+rhgs2
+rhgs3
+rhgs4
+rhgs5</code></pre>
+
+
+<h3 id="backend-section">Backend Section</h3>
+<p>The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (<strong>the block device should be xvdd</strong>), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.</p>
+<pre class="codehilite"><code>[backend-setup]
+devices=xvdd
+vgs=rhgs_vg3
+pools=rhgs_thinpool3
+lvs=rhgs_lv3
+mountpoints=/rhgs/brick_xvdd
+brick_dirs=/rhgs/brick_xvdd/ecvol</code></pre>
+
+
+<h3 id="volume-section">Volume Section</h3>
+<p>Next you define the specific architecture and configuration of the disperse volume you are creating.</p>
+<pre class="codehilite"><code>[volume]
+action=create
+volname=ecvol
+disperse=yes
+disperse_count=4
+redundancy_count=2
+force=yes</code></pre></div>
         </div>
 
         <footer class="col-md-12">
