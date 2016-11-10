@@ -57,6 +57,45 @@ Disperse volumes should be used when capacity is of greater value than performan
 
 You will use the **Ansible**-based deployment tool `gdeploy` in order to create your disperse volume. For this, you will need to build a custom configuration file. Store this file as `/home/gluster/ecvol.conf`.
 
-> **NOTE** For your convenience, the `vim`, `emacs`, and `pico` editing tools are installed.
+> **NOTE** For your convenience, the `vim` and `emacs` editing tools are installed on all lab systems.
 
+### Hosts Section
 
+First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
+
+```
+[hosts]
+rhgs1
+rhgs2
+rhgs3
+rhgs4
+rhgs5
+```
+
+### Backend Section
+
+The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (**the block device should be xvdd**), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.
+
+```
+[backend-setup]
+devices=xvdd
+vgs=rhgs_vg3
+pools=rhgs_thinpool3
+lvs=rhgs_lv3
+mountpoints=/rhgs/brick_xvdd
+brick_dirs=/rhgs/brick_xvdd/ecvol
+```
+
+### Volume Section
+
+Next you define the specific architecture and configuration of the disperse volume you are creating.
+
+```
+[volume]
+action=create
+volname=ecvol
+disperse=yes
+disperse_count=4
+redundancy_count=2
+force=yes
+```
