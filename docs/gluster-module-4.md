@@ -317,7 +317,7 @@ Return again to **client1** via SSH.
 ssh gluster@client1
 ```
 
-Perform file operations on the `ecvol` volume mount point to confirm that your data is still full accessible with the volume in a degraded state.
+Perform file operations on the `ecvol` volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.
 
 ```bash
 ls -lh /rhgs/client/native/ecvol/mydir/
