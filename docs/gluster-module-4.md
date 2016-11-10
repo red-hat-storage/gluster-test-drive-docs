@@ -51,3 +51,12 @@ Disperse volumes offer *space-efficient* and *capacity-optimized* storage archit
 > **NOTE** Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved.
 
 Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. *You should avoid using the NFS client with disperse volumes.*
+
+
+## Build your gdeploy Configuration
+
+You will use the **Ansible**-based deployment tool `gdeploy` in order to create your disperse volume. For this, you will need to build a custom configuration file. Store this file as `/home/gluster/ecvol.conf`.
+
+> **NOTE** For your convenience, the `vim`, `emacs`, and `pico` editing tools are installed.
+
+
