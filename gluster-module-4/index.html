@@ -142,6 +142,8 @@
         
             <li><a href="#deploy-and-review-your-disperse-volume">Deploy and Review your Disperse Volume</a></li>
         
+            <li><a href="#write-to-your-disperse-volume">Write to Your Disperse Volume</a></li>
+        
     
     </ul>
 </div></div>
@@ -155,6 +157,7 @@
 <li>Understand the basic concepts of erasure coding</li>
 <li>Create a gdeploy configuration for a disperse volume</li>
 <li>Deploy a disperse volume using gdeploy</li>
+<li>Write files to a disperse volume and observe the backend</li>
 <li>Manually fail bricks and observe the high availability of erasure coding</li>
 </ul>
 <h2 id="getting-started">Getting Started</h2>
@@ -204,7 +207,7 @@ rhgs5
 rhgs6</code></pre>
 
 
-<h3 id="backend-section">Backend Section</h3>
+<h3 id="backend-setup-section">Backend-Setup Section</h3>
 <p>The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (<strong>the block device should be xvdd</strong>), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.</p>
 <pre class="codehilite"><code class="language-ini">[backend-setup]
 devices=xvdd
@@ -305,6 +308,205 @@ Volume Information
                                +--rhgs5:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
                                |
                                +--rhgs6:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB
+</code></div>
+
+<h2 id="write-to-your-disperse-volume">Write to Your Disperse Volume</h2>
+<p>From rhgs1 connect via SSH to client1.</p>
+<pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
+
+
+<p>Confirm that your <code>ecvol</code> volume is mounted.</p>
+<pre class="codehilite"><code class="language-bash">mount | grep ecvol</code></pre>
+
+
+<p><code>rhgs1:ecvol on /rhgs/client/native/ecvol type fuse.glusterfs (rw,relatime,user_id=0,group_id=0,default_permissions,allow_other,max_read=131072)</code></p>
+<pre class="codehilite"><code class="language-bash">df -h /rhgs/client/native/ecvol</code></pre>
+
+
+<p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
+<code>rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol</code></p>
+<p>Write a few 10MB files of <em>plain text</em> to the <code>ecvol</code> volume.</p>
+<pre class="codehilite"><code class="language-bash">sudo mkdir /rhgs/client/native/ecvol/mydir
+sudo chmod 777 /rhgs/client/native/ecvol/mydir/
+for i in {0..5}; do base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile$i; done</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 60M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">file /rhgs/client/native/ecvol/mydir/ecfile0 </code></pre>
+
+
+<p><code>/rhgs/client/native/ecvol/mydir/ecfile0: ASCII text</code></p>
+<p>Return to lab node rhgs1.</p>
+<pre class="codehilite"><code class="language-bash">exit</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 15M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">file /rhgs/brick_xvdd/ecvol/mydir/ecfile0 </code></pre>
+
+
+<p><code>/rhgs/brick_xvdd/ecvol/mydir/ecfile0: data</code></p>
+<pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd&quot;; done</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">sudo gstatus -w -v ecvol</code></pre>
+
+
+<div><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  40.00 GiB(raw bricks)
+      Status: UNHEALTHY(4)                 192.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+    ecvol            UP(DEGRADED) - 4/6 bricks up - Disperse
+                     Capacity: (0% used) 192.00 MiB/40.00 GiB (used/total)
+                     Snapshots: 0
+                     Self Heal:  4/ 6
+                     Tasks Active: None
+                     Protocols: glusterfs:on  NFS:on  SMB:on
+                     Gluster Connectivty: 6 hosts, 40 tcp connections
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">ssh client1</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 60M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">file /rhgs/client/native/ecvol/mydir/ecfile3 </code></pre>
+
+
+<p><code>/rhgs/client/native/ecvol/mydir/ecfile3: ASCII text</code></p>
+<pre class="codehilite"><code class="language-bash">stat /rhgs/client/native/ecvol/mydir/ecfile5</code></pre>
+
+
+<div><code>
+  File: ‘/rhgs/client/native/ecvol/mydir/ecfile5’
+  Size: 10485760    Blocks: 20480      IO Block: 131072 regular file
+Device: 24h/36d Inode: 9763979935191258614  Links: 1
+Access: (0664/-rw-rw-r--)  Uid: ( 1001/ gluster)   Gid: ( 1001/ gluster)
+Context: system_u:object_r:fusefs_t:s0
+Access: 2016-11-10 14:17:05.379530355 -0500
+Modify: 2016-11-10 14:17:06.790558942 -0500
+Change: 2016-11-10 14:17:06.799559124 -0500
+ Birth: -
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">cat /rhgs/client/native/ecvol/mydir/ecfile2 &gt; /dev/null</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 70M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:29 ecfile6
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 18M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">ssh rhgs2</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 15M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl start glusterd.service&quot;; done</code></pre>
+
+
+<pre class="codehilite"><code class="language-bash">sudo gstatus -w -v ecvol</code></pre>
+
+
+<div><code>
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      298.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+    ecvol            UP - 6/6 bricks up - Disperse
+                     Capacity: (0% used) 199.00 MiB/40.00 GiB (used/total)
+                     Snapshots: 0
+                     Self Heal:  6/ 6
+                     Tasks Active: None
+                     Protocols: glusterfs:on  NFS:on  SMB:on
+                     Gluster Connectivty: 8 hosts, 84 tcp connections
+</code></div>
+
+<pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
+
+
+<div><code>
+total 18M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div></div>
         </div>
 
