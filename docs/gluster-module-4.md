@@ -8,6 +8,7 @@ Welcome to the Gluster Test Drive Module 4 - Disperse Volumes (Erasure Coding). 
 - Understand the basic concepts of erasure coding
 - Create a gdeploy configuration for a disperse volume
 - Deploy a disperse volume using gdeploy
+- Write files to a disperse volume and observe the backend
 - Manually fail bricks and observe the high availability of erasure coding
 
 
@@ -73,7 +74,7 @@ rhgs5
 rhgs6
 ```
 
-### Backend Section
+### Backend-Setup Section
 
 The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (**the block device should be xvdd**), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.
 
@@ -189,4 +190,238 @@ Volume Information
                                +--rhgs5:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB 
                                |
                                +--rhgs6:/rhgs/brick_xvdd/ecvol(UP) 33.00 MiB/10.00 GiB
+</code></div>
+
+
+## Write to Your Disperse Volume
+
+From rhgs1 connect via SSH to client1.
+
+```bash
+ssh gluster@client1
+```
+
+Confirm that your `ecvol` volume is mounted.
+
+```bash
+mount | grep ecvol
+```
+
+``rhgs1:ecvol on /rhgs/client/native/ecvol type fuse.glusterfs (rw,relatime,user_id=0,group_id=0,default_permissions,allow_other,max_read=131072)``
+
+```bash
+df -h /rhgs/client/native/ecvol
+```
+
+``Filesystem      Size  Used Avail Use% Mounted on``
+``rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol``
+
+Write a few 10MB files of *plain text* to the `ecvol` volume.
+
+```bash
+sudo mkdir /rhgs/client/native/ecvol/mydir
+sudo chmod 777 /rhgs/client/native/ecvol/mydir/
+for i in {0..5}; do base64 /dev/urandom | head -c 10240k > /rhgs/client/native/ecvol/mydir/ecfile$i; done
+```
+
+```bash
+ls -lh /rhgs/client/native/ecvol/mydir/
+``` 
+
+<div><code>
+total 60M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
+</code></div>
+
+```bash
+file /rhgs/client/native/ecvol/mydir/ecfile0 
+```
+
+``/rhgs/client/native/ecvol/mydir/ecfile0: ASCII text``
+
+Return to lab node rhgs1.
+
+```bash
+exit
+```
+
+```bash
+ls -lh /rhgs/brick_xvdd/ecvol/mydir/
+```
+
+<div><code>
+total 15M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+</code></div>
+
+```bash
+file /rhgs/brick_xvdd/ecvol/mydir/ecfile0 
+```
+
+``/rhgs/brick_xvdd/ecvol/mydir/ecfile0: data``
+
+```bash
+for i in 2 5; do ssh root@rhgs$i "systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd"; done
+```
+
+```bash
+sudo gstatus -w -v ecvol
+```
+
+<div><code> 
+     Product: RHGS Server v3.1Update3  Capacity:  40.00 GiB(raw bricks)
+      Status: UNHEALTHY(4)                 192.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+	ecvol            UP(DEGRADED) - 4/6 bricks up - Disperse
+	                 Capacity: (0% used) 192.00 MiB/40.00 GiB (used/total)
+	                 Snapshots: 0
+	                 Self Heal:  4/ 6
+	                 Tasks Active: None
+	                 Protocols: glusterfs:on  NFS:on  SMB:on
+	                 Gluster Connectivty: 6 hosts, 40 tcp connections
+</code></div>
+
+
+```bash
+ssh client1
+```
+
+```bash
+ls -lh /rhgs/client/native/ecvol/mydir/
+```
+
+<div><code>
+total 60M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
+</code></div>
+
+```bash
+file /rhgs/client/native/ecvol/mydir/ecfile3 
+```
+
+``/rhgs/client/native/ecvol/mydir/ecfile3: ASCII text``
+
+```bash
+stat /rhgs/client/native/ecvol/mydir/ecfile5
+```
+
+<div><code>
+  File: ‘/rhgs/client/native/ecvol/mydir/ecfile5’
+  Size: 10485760  	Blocks: 20480      IO Block: 131072 regular file
+Device: 24h/36d	Inode: 9763979935191258614  Links: 1
+Access: (0664/-rw-rw-r--)  Uid: ( 1001/ gluster)   Gid: ( 1001/ gluster)
+Context: system_u:object_r:fusefs_t:s0
+Access: 2016-11-10 14:17:05.379530355 -0500
+Modify: 2016-11-10 14:17:06.790558942 -0500
+Change: 2016-11-10 14:17:06.799559124 -0500
+ Birth: -
+</code></div>
+
+```bash
+cat /rhgs/client/native/ecvol/mydir/ecfile2 > /dev/null
+```
+
+```bash
+ls -lh /rhgs/client/native/ecvol/mydir/
+```
+
+<div><code>
+total 70M
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
+-rw-rw-r--. 1 gluster gluster 10M Nov 10 14:29 ecfile6
+</code></div>
+
+```bash
+ls -lh /rhgs/brick_xvdd/ecvol/mydir/
+```
+
+<div><code>
+total 18M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
+</code></div>
+
+```bash
+ssh rhgs2
+```
+
+```bash
+ls -lh /rhgs/brick_xvdd/ecvol/mydir/
+```
+
+<div><code>
+total 15M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+</code></div>
+
+```bash
+for i in 2 5; do ssh root@rhgs$i "systemctl start glusterd.service"; done
+```
+
+```bash
+sudo gstatus -w -v ecvol
+```
+ 
+<div><code>
+     Product: RHGS Server v3.1Update3  Capacity:  60.00 GiB(raw bricks)
+      Status: HEALTHY                      298.00 MiB(raw used)
+   Glusterfs: 3.7.5                         40.00 GiB(usable from volumes)
+  OverCommit: No                Snapshots:   0
+
+Volume Information
+	ecvol            UP - 6/6 bricks up - Disperse
+	                 Capacity: (0% used) 199.00 MiB/40.00 GiB (used/total)
+	                 Snapshots: 0
+	                 Self Heal:  6/ 6
+	                 Tasks Active: None
+	                 Protocols: glusterfs:on  NFS:on  SMB:on
+	                 Gluster Connectivty: 8 hosts, 84 tcp connections
+</code></div>
+
+```bash
+ls -lh /rhgs/brick_xvdd/ecvol/mydir/
+```
+
+<div><code>
+total 18M
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div>
