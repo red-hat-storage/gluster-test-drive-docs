@@ -35,19 +35,19 @@ For example, assume you need *n=4* bricks to hold your data set and you require 
 
 ### Erasure Coding and Parity
 
-Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of *data* and *parity* across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a *redundancy to data* ratio. For our lab, we will be using a 4:2 ratio -- 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.
+Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of *data* and *parity* across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a *redundancy-to-data* ratio. For our lab, you will be using a 4:2 ratio -- 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.
 
-> **NOTE** This functionality is very similar to RAID at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.
+> **NOTE** This functionality is very similar to how RAID works at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.
 
-When data is written to the disperse volume, it is broken into calculated chunks and written across all of the bricks in the disperse set. When data is read, it can be algorithmically reassembled from **any n of the bricks where n is the number of data bricks in the set**. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the data.
+When a file is written to the disperse volume, it is broken into calculated chunks of data and written across all of the bricks in the disperse set. When a file is read, it can be **algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set**. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.
 
 ### Use Cases
 
-Disperse volumes offer space-efficient and capacity-optimized architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.
+Disperse volumes offer *space-efficient* and *capacity-optimized* storage architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.
 
 - The overhead of the algorithms can lead to decreased performance for your data set, particularly for reads and for small files.
 - The files are no longer stored in their whole original form on the brick backends, making offline or backend retrieval of data impossible.
 
-> **NOTE** Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and even sometimes improved.
+> **NOTE** Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved.
 
 Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. *You should avoid using the NFS client with disperse volumes.*
