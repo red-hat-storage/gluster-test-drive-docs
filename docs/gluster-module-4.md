@@ -193,9 +193,11 @@ Volume Information
 </code></div>
 
 
-## Write to Your Disperse Volume
+## File Operations on a Disperse Volume
 
-From rhgs1 connect via SSH to client1.
+### Create Files from the Client
+
+From **rhgs1** connect via SSH to **client1**.
 
 ```bash
 ssh gluster@client1
@@ -216,7 +218,7 @@ df -h /rhgs/client/native/ecvol
 ``Filesystem      Size  Used Avail Use% Mounted on``
 ``rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol``
 
-Write a few 10MB files of *plain text* to the `ecvol` volume.
+Write a few 10MB files of **plain text** to the `ecvol` volume.
 
 ```bash
 sudo mkdir /rhgs/client/native/ecvol/mydir
@@ -238,17 +240,21 @@ total 60M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
 </code></div>
 
+Validate that you have created ASCII text files.
+
 ```bash
 file /rhgs/client/native/ecvol/mydir/ecfile0 
 ```
 
 ``/rhgs/client/native/ecvol/mydir/ecfile0: ASCII text``
 
-Return to lab node rhgs1.
+Return to lab node **rhgs1**.
 
 ```bash
 exit
 ```
+
+Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size.
 
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
@@ -264,15 +270,25 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
+Each one of these files in a fragment of the file created at the client combined with the parity data required to calculate the reassembly of the file.
+
+Note that the file types here are `data` instead of `ASCII text`.
+
 ```bash
 file /rhgs/brick_xvdd/ecvol/mydir/ecfile0 
 ```
 
 ``/rhgs/brick_xvdd/ecvol/mydir/ecfile0: data``
 
+### Test Disperse Volume Resilliency
+
+Choose any 2 of the gluster nodes other than rhgs1 (rhgs2 through rhgs6), and stop all gluster processes on those nodes. *In the example here, we have chosen nodes rhgs2 and rhgs5.*
+
 ```bash
 for i in 2 5; do ssh root@rhgs$i "systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd"; done
 ```
+
+Take a look at the volume now with the `gstatus` tool. You will notice it is marked as `UNHEALTHY` and `DEGRADED`.
 
 ```bash
 sudo gstatus -w -v ecvol
@@ -295,9 +311,13 @@ Volume Information
 </code></div>
 
 
+Return again to **client1** via SSH.
+
 ```bash
-ssh client1
+ssh gluster@client1
 ```
+
+Perform file operations on the `ecvol` volume mount point to confirm that your data is still full accessible with the volume in a degraded state.
 
 ```bash
 ls -lh /rhgs/client/native/ecvol/mydir/
@@ -339,6 +359,12 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 cat /rhgs/client/native/ecvol/mydir/ecfile2 > /dev/null
 ```
 
+Create a new file.
+
+```bash
+base64 /dev/urandom | head -c 10240k > /rhgs/client/native/ecvol/mydir/ecfile6
+```
+
 ```bash
 ls -lh /rhgs/client/native/ecvol/mydir/
 ```
@@ -353,6 +379,15 @@ total 70M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:29 ecfile6
 </code></div>
+
+
+Return to lab node **rhgs1**.
+
+```bash
+exit
+```
+
+Note that the new file you created is available on node **rhgs1** where the Gluster processes were not shut down.
 
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
@@ -369,9 +404,14 @@ total 18M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div>
 
+
+Connect via ssh to one of the nodes on which you stopped the Gluster processes above.
+
 ```bash
 ssh rhgs2
 ```
+
+Note that on this node the new file you created does not exist.
 
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
@@ -387,9 +427,13 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
+Re-start the Gluster services on the nodes where you stopped them above.
+
 ```bash
 for i in 2 5; do ssh root@rhgs$i "systemctl start glusterd.service"; done
 ```
+
+Confirm that the `ecvol` volume is no longer in a `DEGRADED` state.
 
 ```bash
 sudo gstatus -w -v ecvol
@@ -411,6 +455,9 @@ Volume Information
 	                 Gluster Connectivty: 8 hosts, 84 tcp connections
 </code></div>
 
+
+Allow a minute or two for the *self-heal daemon* to catch up, and then note that the new file you created is now available on this brick backend.
+
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
 ```
@@ -425,3 +472,9 @@ total 18M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div>
+
+Return to node **rhgs1**.
+
+```bash
+exit
+```
