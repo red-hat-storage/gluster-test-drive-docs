@@ -44,7 +44,7 @@ Mac and Linux users, you will use your preferred terminal application (this shou
 
 ### Starting the Lab
 
-> **NOTE** Module 1 is not hands-on and does not require the lab to be started. Because the time limit will begin after clicking the **Start** button, you may wish to wait until you are ready to begin a later module.
+> **NOTE** Module 1 is not hands-on and does not require the lab to be started. Because the time limit will begin after clicking the **Start Lab** button, you may wish to wait until you are ready to begin a later module before you click the button.
 
 1. On the **Lab Details** tab to the right, notice the lab properties:
 
