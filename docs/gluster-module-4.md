@@ -5,8 +5,8 @@
 Welcome to the Gluster Test Drive Module 4 - Disperse Volumes (Erasure Coding). In this lab you will:
 
 - Understand the basic concepts of erasure coding
-- Create a gdeploy configuration for a disperse volume
-- Deploy a disperse volume using gdeploy
+- Create a `gdeploy` configuration for a disperse volume
+- Deploy a disperse volume using `gdeploy`
 - Write files to a disperse volume and observe the backend
 - Manually fail bricks and observe the high availability of erasure coding
 
@@ -27,19 +27,19 @@ ssh gluster@<rhgs1PublicIP>
 
 ## About Disperse Volumes
 
-Gluster disperse volumes utilize **erasure coding** technology to provide data protection with a lower overall infrastructure investment. Unlike standard replication, in which to protect *n* bricks against *r* failures you must invest in a total of *n+(n\*r)* bricks, with erasure coding you can design for the same level of protection with an investment of only *n+(n/r)* or even less.
+Gluster disperse volumes utilize **erasure coding** technology to provide data protection with a lower overall infrastructure investment. Unlike standard replication, in which to protect *n* bricks against *r* failures you must invest in a total of *n+(n\*r)* bricks, with erasure coding you can design for the same level of protection with an investment of only *n+(n/r)* or even less, depending on the erasure coding ratio used.
 
 For example, assume you need *n=4* bricks to hold your data set and you require protection from failure of *r=2* bricks. If you use standard **replication**, your investment in bricks will be *4+(4\*2)* or **12 total bricks**. If instead you utilize **erasure coding**, your investment in bricks can be *4+(4/2)* or **6 total bricks**.
 
-![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png)
-
 ### Erasure Coding and Parity
 
-Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of *data* and *parity* across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a *redundancy-to-data* ratio. For our lab, you will be using a 4:2 ratio -- 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.
+Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of *data* and *parity* across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a *data-to-redundancy* ratio. For our lab, you will be using a 4:2 ratio -- 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.
 
 > **NOTE** This functionality is very similar to how RAID works at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.
 
-When a file is written to the disperse volume, it is broken into calculated chunks of data and written across all of the bricks in the disperse set. When a file is read, it can be **algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set**. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.
+When a file is written to the disperse volume, it is broken into calculated chunks of data plus parity and written across all of the bricks in the disperse set. When a file is read, it can be **algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set**. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.
+
+![](images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png)
 
 ### Use Cases
 
@@ -48,7 +48,7 @@ Disperse volumes offer *space-efficient* and *capacity-optimized* storage archit
 - The overhead of the algorithms can lead to decreased performance for your data set, particularly for reads and for small files.
 - The files are no longer stored in their whole original form on the brick backends, making offline or backend retrieval of data impossible.
 
-> **NOTE** Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved.
+> **NOTE** Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved versus replication.
 
 Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. *You should avoid using the NFS client with disperse volumes.*
 
@@ -61,7 +61,7 @@ You will use the **Ansible**-based deployment tool `gdeploy` in order to create 
 
 ### Hosts Section
 
-First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
+First you need to define in the `/home/gluster/ecvol.conf` config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
 
 ```ini
 [hosts]
@@ -75,7 +75,7 @@ rhgs6
 
 ### Backend-Setup Section
 
-The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (**the block device should be xvdd**), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.
+The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the brick filesystems (**the block device should be xvdd**), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.
 
 ```ini
 [backend-setup]
@@ -89,7 +89,7 @@ brick_dirs=/rhgs/brick_xvdd/ecvol
 
 ### Volume Section
 
-Next you define the specific architecture and configuration of the disperse volume you are creating.
+Next you define the specific architecture and configuration of the disperse volume you are creating. The `disperse_count` is the minimum number of data bricks for a file operation and the `redundancy_count` is the maximum number brick failures that can be sustained.
 
 ```ini
 [volume]
@@ -103,7 +103,7 @@ force=yes
 
 ### Clients Section
 
-Finally, you can automatically mount the new `ecvol` volume to the client systems.
+Finally, you can automatically mount the new **ecvol** volume to the client systems. The `hosts` value is a comma-separated list of clients on which to make the mount.
 
 ```ini
 [clients]
@@ -119,9 +119,9 @@ client_mount_points=/rhgs/client/native/ecvol
 
 ## Deploy and Review your Disperse Volume
 
-Using `gdeploy`, automate the deploymentof your `ecvol` volume.
+Using `gdeploy` and the `/home/gluster/ecvol.conf` file you've created, automate the deployment of your disperse **ecvol** volume.
 
-> **NOTE** Sudo is not needed for the `gdeploy` command.
+> **NOTE** The `sudo` tool is not needed for the `gdeploy` command.
 
 ```bash
 gdeploy -c /home/gluster/ecvol.conf
@@ -151,7 +151,7 @@ Options Reconfigured:
 performance.readdir-ahead: on
 </code></div>
 
-Also take a look at the layout with the `gstatus` command.
+Also take a look at the volume layout with the `gstatus` command.
 
 ```bash
 sudo gstatus -l -w -v ecvol
@@ -202,7 +202,7 @@ From **rhgs1** connect via SSH to **client1**.
 ssh gluster@client1
 ```
 
-Confirm that your `ecvol` volume is mounted.
+Confirm that your **ecvol** volume is mounted.
 
 ```bash
 mount | grep ecvol
@@ -217,7 +217,7 @@ df -h /rhgs/client/native/ecvol
 ``Filesystem      Size  Used Avail Use% Mounted on``
 ``rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol``
 
-Write a few 10MB files of **plain text** to the `ecvol` volume.
+Write a few 10MB files of **plain text** to the **ecvol** volume.
 
 ```bash
 sudo mkdir /rhgs/client/native/ecvol/mydir
@@ -239,7 +239,7 @@ total 60M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
 </code></div>
 
-Validate that you have created ASCII text files.
+Validate that you have created **ASCII text** files.
 
 ```bash
 file /rhgs/client/native/ecvol/mydir/ecfile0 
@@ -253,7 +253,7 @@ Return to lab node **rhgs1**.
 exit
 ```
 
-Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size.
+Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size than what you created from the client.
 
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
@@ -281,7 +281,7 @@ file /rhgs/brick_xvdd/ecvol/mydir/ecfile0
 
 ### Test Disperse Volume Resilliency
 
-Choose any 2 of the gluster nodes other than rhgs1 (rhgs2 through rhgs6), and stop all gluster processes on those nodes. *In the example here, we have chosen nodes rhgs2 and rhgs5.*
+Choose any 2 of the gluster nodes other than rhgs1 (*rhgs2 through rhgs6*), and stop all gluster processes on those nodes. *In the example here, we have chosen nodes **rhgs2** and **rhgs5**.*
 
 ```bash
 for i in 2 5; do ssh root@rhgs$i "systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd"; done
@@ -316,7 +316,7 @@ Return again to **client1** via SSH.
 ssh gluster@client1
 ```
 
-Perform file operations on the `ecvol` volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.
+Perform file operations on the **ecvol** volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.
 
 ```bash
 ls -lh /rhgs/client/native/ecvol/mydir/
@@ -358,7 +358,7 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 cat /rhgs/client/native/ecvol/mydir/ecfile2 > /dev/null
 ```
 
-Create a new plain text file in the `ecvol` volume mount point.
+Create a new plain text file in the **ecvol** volume mount point.
 
 ```bash
 base64 /dev/urandom | head -c 10240k > /rhgs/client/native/ecvol/mydir/ecfile6
@@ -404,7 +404,7 @@ total 18M
 </code></div>
 
 
-Connect via ssh to one of the nodes on which you stopped the Gluster processes above.
+Connect via SSH to one of the nodes on which you stopped the Gluster processes above. We use **rhgs2** in the example.
 
 ```bash
 ssh rhgs2
@@ -426,13 +426,13 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
-Re-start the Gluster services on the nodes where you stopped them above.
+Re-start the Gluster services on the nodes where you stopped them above. These are nodes **rhgs2** and **rhgs5** in our example.
 
 ```bash
 for i in 2 5; do ssh root@rhgs$i "systemctl start glusterd.service"; done
 ```
 
-Confirm that the `ecvol` volume is no longer in a `DEGRADED` state.
+Confirm that the **ecvol** volume is no longer in a `DEGRADED` state.
 
 ```bash
 sudo gstatus -w -v ecvol
@@ -455,7 +455,7 @@ Volume Information
 </code></div>
 
 
-Allow a minute or two for the *self-heal daemon* to catch up, and then note that the new file you created is now available on this brick backend.
+Allow a minute or two for the **self-heal daemon** to catch up, and then note that the new file you created is now available on this brick backend.
 
 ```bash
 ls -lh /rhgs/brick_xvdd/ecvol/mydir/
