@@ -4,7 +4,7 @@
 /* Default font. */
 body {
   font-family: "Open Sans","liberation sans", "Myriad ", "Bitstream Vera Sans", "Lucida Grande", "Luxi Sans", "Trebuchet MS", helvetica, verdana, arial, sans-serif;
-//  font-size: 1em;
+  font-size: 1.5em;
   color: #000000;
   text-rendering: optimizeLegibility;
 }

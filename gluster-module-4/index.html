@@ -154,8 +154,8 @@
 <p>Welcome to the Gluster Test Drive Module 4 - Disperse Volumes (Erasure Coding). In this lab you will:</p>
 <ul>
 <li>Understand the basic concepts of erasure coding</li>
-<li>Create a gdeploy configuration for a disperse volume</li>
-<li>Deploy a disperse volume using gdeploy</li>
+<li>Create a <code>gdeploy</code> configuration for a disperse volume</li>
+<li>Deploy a disperse volume using <code>gdeploy</code></li>
 <li>Write files to a disperse volume and observe the backend</li>
 <li>Manually fail bricks and observe the high availability of erasure coding</li>
 </ul>
@@ -171,15 +171,15 @@
 
 
 <h2 id="about-disperse-volumes">About Disperse Volumes</h2>
-<p>Gluster disperse volumes utilize <strong>erasure coding</strong> technology to provide data protection with a lower overall infrastructure investment. Unlike standard replication, in which to protect <em>n</em> bricks against <em>r</em> failures you must invest in a total of <em>n+(n*r)</em> bricks, with erasure coding you can design for the same level of protection with an investment of only <em>n+(n/r)</em> or even less.</p>
+<p>Gluster disperse volumes utilize <strong>erasure coding</strong> technology to provide data protection with a lower overall infrastructure investment. Unlike standard replication, in which to protect <em>n</em> bricks against <em>r</em> failures you must invest in a total of <em>n+(n*r)</em> bricks, with erasure coding you can design for the same level of protection with an investment of only <em>n+(n/r)</em> or even less, depending on the erasure coding ratio used.</p>
 <p>For example, assume you need <em>n=4</em> bricks to hold your data set and you require protection from failure of <em>r=2</em> bricks. If you use standard <strong>replication</strong>, your investment in bricks will be <em>4+(4*2)</em> or <strong>12 total bricks</strong>. If instead you utilize <strong>erasure coding</strong>, your investment in bricks can be <em>4+(4/2)</em> or <strong>6 total bricks</strong>.</p>
-<p><img alt="" src="../images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png" /></p>
 <h3 id="erasure-coding-and-parity">Erasure Coding and Parity</h3>
-<p>Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of <em>data</em> and <em>parity</em> across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a <em>redundancy-to-data</em> ratio. For our lab, you will be using a 4:2 ratio &ndash; 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.</p>
+<p>Instead of writing multiple exact copies of data, erasure coding algorithms write a combination of <em>data</em> and <em>parity</em> across bricks in the volume. A number of encoding algorithms are available offering varying levels of protection in terms of a <em>data-to-redundancy</em> ratio. For our lab, you will be using a 4:2 ratio &ndash; 2 levels of redundancy for every 4 data bricks, meaning that each disperse set requires exactly 6 bricks.</p>
 <blockquote>
 <p><strong>NOTE</strong> This functionality is very similar to how RAID works at the block level. You can relate our 4:2 erasure coding ratio to RAID level 6.</p>
 </blockquote>
-<p>When a file is written to the disperse volume, it is broken into calculated chunks of data and written across all of the bricks in the disperse set. When a file is read, it can be <strong>algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set</strong>. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.</p>
+<p>When a file is written to the disperse volume, it is broken into calculated chunks of data plus parity and written across all of the bricks in the disperse set. When a file is read, it can be <strong>algorithmically reassembled from any n of the bricks where n is the number of data bricks in the set</strong>. Here with our 4:2 ratio, therefore, any 4 of the 6 bricks can be used to retrieve the files.</p>
+<p><img alt="" src="../images/RHS_Gluster_Test_Drive-Module_1-dblack-201610-19.png" /></p>
 <h3 id="use-cases">Use Cases</h3>
 <p>Disperse volumes offer <em>space-efficient</em> and <em>capacity-optimized</em> storage architectures. However, there are a couple of primary tradeoffs when considering this method of data protection.</p>
 <ul>
@@ -187,7 +187,7 @@
 <li>The files are no longer stored in their whole original form on the brick backends, making offline or backend retrieval of data impossible.</li>
 </ul>
 <blockquote>
-<p><strong>NOTE</strong> Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved.</p>
+<p><strong>NOTE</strong> Interestingly, it has been shown that, under most conditions with the Gluster native client, write performance is unaffected by erasure coding and is even sometimes modestly improved versus replication.</p>
 </blockquote>
 <p>Disperse volumes should be used when capacity is of greater value than performance. Larger file workloads (1GB+) will experience the least performance degredation versus replicated volumes. <em>You should avoid using the NFS client with disperse volumes.</em></p>
 <h2 id="build-your-gdeploy-configuration">Build your gdeploy Configuration</h2>
@@ -196,7 +196,7 @@
 <p><strong>NOTE</strong> For your convenience, the <code>vim</code> and <code>emacs</code> editing tools are installed on all lab systems.</p>
 </blockquote>
 <h3 id="hosts-section">Hosts Section</h3>
-<p>First you need to define in the config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.</p>
+<p>First you need to define in the <code>/home/gluster/ecvol.conf</code> config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.</p>
 <pre class="codehilite"><code class="language-ini">[hosts]
 rhgs1
 rhgs2
@@ -207,7 +207,7 @@ rhgs6</code></pre>
 
 
 <h3 id="backend-setup-section">Backend-Setup Section</h3>
-<p>The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the bricks filesystems (<strong>the block device should be xvdd</strong>), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.</p>
+<p>The backend setup across all of the Gluster nodes is identical, and therefore we need only one universal backend-setup section in the config file. In this section, you define the block devices that will host the brick filesystems (<strong>the block device should be xvdd</strong>), the LVM structure (thin provisioning in this case), the filesystem mount point, and the subdirectory that will be used to host the brick.</p>
 <pre class="codehilite"><code class="language-ini">[backend-setup]
 devices=xvdd
 vgs=rhgs_vg3
@@ -218,7 +218,7 @@ brick_dirs=/rhgs/brick_xvdd/ecvol</code></pre>
 
 
 <h3 id="volume-section">Volume Section</h3>
-<p>Next you define the specific architecture and configuration of the disperse volume you are creating.</p>
+<p>Next you define the specific architecture and configuration of the disperse volume you are creating. The <code>disperse_count</code> is the minimum number of data bricks for a file operation and the <code>redundancy_count</code> is the maximum number brick failures that can be sustained.</p>
 <pre class="codehilite"><code class="language-ini">[volume]
 action=create
 volname=ecvol
@@ -229,7 +229,7 @@ force=yes</code></pre>
 
 
 <h3 id="clients-section">Clients Section</h3>
-<p>Finally, you can automatically mount the new <code>ecvol</code> volume to the client systems.</p>
+<p>Finally, you can automatically mount the new <strong>ecvol</strong> volume to the client systems. The <code>hosts</code> value is a comma-separated list of clients on which to make the mount.</p>
 <pre class="codehilite"><code class="language-ini">[clients]
 action=mount
 volname=ecvol
@@ -242,9 +242,9 @@ client_mount_points=/rhgs/client/native/ecvol</code></pre>
 <p><strong>NOTE</strong> You can check your work against the provided <code>/home/gluster/example/ecvol.conf</code> file.</p>
 </blockquote>
 <h2 id="deploy-and-review-your-disperse-volume">Deploy and Review your Disperse Volume</h2>
-<p>Using <code>gdeploy</code>, automate the deploymentof your <code>ecvol</code> volume.</p>
+<p>Using <code>gdeploy</code> and the <code>/home/gluster/ecvol.conf</code> file you&rsquo;ve created, automate the deployment of your disperse <strong>ecvol</strong> volume.</p>
 <blockquote>
-<p><strong>NOTE</strong> Sudo is not needed for the <code>gdeploy</code> command.</p>
+<p><strong>NOTE</strong> The <code>sudo</code> tool is not needed for the <code>gdeploy</code> command.</p>
 </blockquote>
 <pre class="codehilite"><code class="language-bash">gdeploy -c /home/gluster/ecvol.conf</code></pre>
 
@@ -271,7 +271,7 @@ Options Reconfigured:
 performance.readdir-ahead: on
 </code></div>
 
-<p>Also take a look at the layout with the <code>gstatus</code> command.</p>
+<p>Also take a look at the volume layout with the <code>gstatus</code> command.</p>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -l -w -v ecvol</code></pre>
 
 
@@ -315,7 +315,7 @@ Volume Information
 <pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
-<p>Confirm that your <code>ecvol</code> volume is mounted.</p>
+<p>Confirm that your <strong>ecvol</strong> volume is mounted.</p>
 <pre class="codehilite"><code class="language-bash">mount | grep ecvol</code></pre>
 
 
@@ -325,7 +325,7 @@ Volume Information
 
 <p><code>Filesystem      Size  Used Avail Use% Mounted on</code><br />
 <code>rhgs1:ecvol      40G  133M   40G   1% /rhgs/client/native/ecvol</code></p>
-<p>Write a few 10MB files of <strong>plain text</strong> to the <code>ecvol</code> volume.</p>
+<p>Write a few 10MB files of <strong>plain text</strong> to the <strong>ecvol</strong> volume.</p>
 <pre class="codehilite"><code class="language-bash">sudo mkdir /rhgs/client/native/ecvol/mydir
 sudo chmod 777 /rhgs/client/native/ecvol/mydir/
 for i in {0..5}; do base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile$i; done</code></pre>
@@ -344,7 +344,7 @@ total 60M
 -rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
 </code></div>
 
-<p>Validate that you have created ASCII text files.</p>
+<p>Validate that you have created <strong>ASCII text</strong> files.</p>
 <pre class="codehilite"><code class="language-bash">file /rhgs/client/native/ecvol/mydir/ecfile0 </code></pre>
 
 
@@ -353,7 +353,7 @@ total 60M
 <pre class="codehilite"><code class="language-bash">exit</code></pre>
 
 
-<p>Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size.</p>
+<p>Now take a look at your files on the brick backend. You will find that all of the files exist, but are smaller in size than what you created from the client.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
@@ -374,7 +374,7 @@ total 15M
 
 <p><code>/rhgs/brick_xvdd/ecvol/mydir/ecfile0: data</code></p>
 <h3 id="test-disperse-volume-resilliency">Test Disperse Volume Resilliency</h3>
-<p>Choose any 2 of the gluster nodes other than rhgs1 (rhgs2 through rhgs6), and stop all gluster processes on those nodes. <em>In the example here, we have chosen nodes rhgs2 and rhgs5.</em></p>
+<p>Choose any 2 of the gluster nodes other than rhgs1 (<em>rhgs2 through rhgs6</em>), and stop all gluster processes on those nodes. <em>In the example here, we have chosen nodes <strong>rhgs2</strong> and <strong>rhgs5</strong>.</em></p>
 <pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl stop glusterd.service; pkill glusterfs; pkill glusterfsd&quot;; done</code></pre>
 
 
@@ -402,7 +402,7 @@ Volume Information
 <pre class="codehilite"><code class="language-bash">ssh gluster@client1</code></pre>
 
 
-<p>Perform file operations on the <code>ecvol</code> volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.</p>
+<p>Perform file operations on the <strong>ecvol</strong> volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/client/native/ecvol/mydir/</code></pre>
 
 
@@ -438,7 +438,7 @@ Change: 2016-11-10 14:17:06.799559124 -0500
 <pre class="codehilite"><code class="language-bash">cat /rhgs/client/native/ecvol/mydir/ecfile2 &gt; /dev/null</code></pre>
 
 
-<p>Create a new plain text file in the <code>ecvol</code> volume mount point.</p>
+<p>Create a new plain text file in the <strong>ecvol</strong> volume mount point.</p>
 <pre class="codehilite"><code class="language-bash">base64 /dev/urandom | head -c 10240k &gt; /rhgs/client/native/ecvol/mydir/ecfile6</code></pre>
 
 
@@ -475,7 +475,7 @@ total 18M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
 </code></div>
 
-<p>Connect via ssh to one of the nodes on which you stopped the Gluster processes above.</p>
+<p>Connect via SSH to one of the nodes on which you stopped the Gluster processes above. We use <strong>rhgs2</strong> in the example.</p>
 <pre class="codehilite"><code class="language-bash">ssh rhgs2</code></pre>
 
 
@@ -493,11 +493,11 @@ total 15M
 -rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
-<p>Re-start the Gluster services on the nodes where you stopped them above.</p>
+<p>Re-start the Gluster services on the nodes where you stopped them above. These are nodes <strong>rhgs2</strong> and <strong>rhgs5</strong> in our example.</p>
 <pre class="codehilite"><code class="language-bash">for i in 2 5; do ssh root@rhgs$i &quot;systemctl start glusterd.service&quot;; done</code></pre>
 
 
-<p>Confirm that the <code>ecvol</code> volume is no longer in a <code>DEGRADED</code> state.</p>
+<p>Confirm that the <strong>ecvol</strong> volume is no longer in a <code>DEGRADED</code> state.</p>
 <pre class="codehilite"><code class="language-bash">sudo gstatus -w -v ecvol</code></pre>
 
 
@@ -517,7 +517,7 @@ Volume Information
                      Gluster Connectivty: 8 hosts, 84 tcp connections
 </code></div>
 
-<p>Allow a minute or two for the <em>self-heal daemon</em> to catch up, and then note that the new file you created is now available on this brick backend.</p>
+<p>Allow a minute or two for the <strong>self-heal daemon</strong> to catch up, and then note that the new file you created is now available on this brick backend.</p>
 <pre class="codehilite"><code class="language-bash">ls -lh /rhgs/brick_xvdd/ecvol/mydir/</code></pre>
 
 
