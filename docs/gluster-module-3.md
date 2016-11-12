@@ -26,7 +26,7 @@ ssh gluster@<rhgs1PublicIP>
 ```
 
 ### If Needed, Create the repvol Volume
-If you have not already done so as part of **Module 2**, deploy the **repvol** volume using the provided gdeploy configuraiton file.
+If you have not already done so as part of **Module 2**, deploy the **repvol** volume using the provided gdeploy configuration file.
 
 ```bash
 gdeploy -c ~/repvol.conf
