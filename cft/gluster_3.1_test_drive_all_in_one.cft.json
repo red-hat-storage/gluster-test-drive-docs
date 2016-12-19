@@ -849,7 +849,10 @@
               "IPV6INIT=\"no\"\n",
               "EOF\n",
               "ifup eth1\n",
-              "ip route del default via 10.100.1.1 dev eth0  proto static  metric 100\n"
+              "ip route del default via 10.100.1.1 dev eth0  proto static  metric 100\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -1070,7 +1073,10 @@
               "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
               "restorecon -Rv /rhgs/brick_xvdb\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -1291,7 +1297,10 @@
               "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
               "restorecon -Rv /rhgs/brick_xvdb\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -1512,7 +1521,10 @@
               "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
               "restorecon -Rv /rhgs/brick_xvdb\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -1733,7 +1745,10 @@
               "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
               "restorecon -Rv /rhgs/brick_xvdb\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -1954,7 +1969,10 @@
               "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
               "restorecon -Rv /rhgs/brick_xvdb\n",
               "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
-              "systemctl restart sshd.service\n"
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -2071,7 +2089,10 @@
               "done\n",
               "echo 'Done!'\n",
               "EOF\n",
-              "chmod 755 /home/gluster/fopmaker.sh\n"
+              "chmod 755 /home/gluster/fopmaker.sh\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
@@ -2188,7 +2209,10 @@
               "done\n",
               "echo 'Done!'\n",
               "EOF\n",
-              "chmod 755 /home/gluster/fopmaker.sh\n"
+              "chmod 755 /home/gluster/fopmaker.sh\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
             ]]
           }
         }
