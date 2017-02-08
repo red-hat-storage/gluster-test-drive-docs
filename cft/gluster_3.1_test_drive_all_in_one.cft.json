@@ -61,7 +61,7 @@
   "Mappings" : {
     
     "AWSNATAMI" : {
-      "us-east-1"      : { "AMI" : "ami-13b6e47a" },
+      "us-east-1"      : { "AMI" : "ami-dd3dd7cb" },
       "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
       "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
       "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
