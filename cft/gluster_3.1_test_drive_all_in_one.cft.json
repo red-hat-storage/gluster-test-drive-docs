@@ -46,7 +46,7 @@
     "RedHatStorageServerInstanceType" : {
       "Description" : "Red Hat Storage Server EC2 instance type",
       "Type" : "String",
-      "Default" : "c3.large",
+      "Default" : "c4.large",
       "NoEcho": "true"
     },
 
