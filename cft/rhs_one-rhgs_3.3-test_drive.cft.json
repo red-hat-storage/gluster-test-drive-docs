@@ -72,7 +72,7 @@
 
 
     "RHSSERVERAMI" : {
-      "us-east-1"      : { "AMI" : "ami-49830433" },
+      "us-east-1"      : { "AMI" : "ami-b956d1c3" },
       "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
       "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
       "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
