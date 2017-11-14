@@ -605,22 +605,15 @@
             "DeviceName" : "/dev/sdb",
             "VirtualName" : "gluster-brick-xvdb",
             "Ebs" : { 
-              "VolumeSize" : "10",
+              "VolumeSize" : "12",
               "VolumeType": "gp2"
             }
           },{
             "DeviceName" : "/dev/sdc",
             "VirtualName" : "gluster-brick-xvdc",
             "Ebs" : { 
-              "VolumeSize" : "10",
-              "VolumeType": "gp2"
-            }
-          },{
-            "DeviceName" : "/dev/sdd",
-            "VirtualName" : "gluster-brick-xvdd",
-            "Ebs" : { 
-              "VolumeSize" : "10",
-              "VolumeType": "gp2"
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
             }
           }
         ]
