@@ -572,55 +572,6 @@
       }
     },
 
-    "PrivateNet1client1" : {
-     "Type" : "AWS::EC2::NetworkInterface",
-     "Properties" : {
-        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
-        "Description": "This is a first private network interface for client nodes",
-        "SourceDestCheck": "false",
-        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
-        "SubnetId": {"Ref" : "PrivateSubnet1"},
-        "PrivateIpAddress": "10.100.1.101"
-      }
-    },
-
-    "PrivateNet1client2" : {
-     "Type" : "AWS::EC2::NetworkInterface",
-     "Properties" : {
-        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
-        "Description": "This is a first private network interface for client nodes",
-        "SourceDestCheck": "false",
-        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
-        "SubnetId": {"Ref" : "PrivateSubnet1"},
-        "PrivateIpAddress": "10.100.1.102"
-      }
-    },
-
-    "PrivateNet1winclient" : {
-     "Type" : "AWS::EC2::NetworkInterface",
-     "Properties" : {
-        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
-        "Description": "This is a first private network interface for win client nodes",
-        "SourceDestCheck": "false",
-        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
-        "SubnetId": {"Ref" : "PrivateSubnet1"},
-        "PrivateIpAddress": "10.100.1.103"
-      }
-    },
-
-    "PublicNet1winclient" : {
-     "Type" : "AWS::EC2::NetworkInterface",
-     "Properties" : {
-        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
-        "Description": "This is a first public network interface for win client nodes",
-        "SourceDestCheck": "false",
-        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
-        "SubnetId": {"Ref" : "PublicSubnet"},
-        "PrivateIpAddress": "10.100.0.103"
-      }
-    },
-
-
     "rhgs1" : {
       "Type" : "AWS::EC2::Instance",
        "Metadata": {
