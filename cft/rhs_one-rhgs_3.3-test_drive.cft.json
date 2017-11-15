@@ -671,7 +671,7 @@
           "Fn::Base64": {
             "Fn::Join": ["", [
               "#!/bin/bash -v\n",
-	      "sed s/PasswordAuthentication\\ no/PasswordAuthentication\\ yes/ /etc/ssh/sshd_config\n",
+	      "sed -i s/PasswordAuthentication no/PasswordAuthentication yes/ /etc/ssh/sshd_config\n",
               "useradd rhsone\n",
               "echo Redhat16 | passwd rhsone --stdin\n",
               "echo \"rhsone ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
