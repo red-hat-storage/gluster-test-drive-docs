@@ -72,7 +72,7 @@
 
 
     "RHSSERVERAMI" : {
-      "us-east-1"      : { "AMI" : "ami-bb6deac1" },
+      "us-east-1"      : { "AMI" : "ami-58f87922" },
       "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
       "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
       "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
@@ -1609,7 +1609,7 @@
 
   "Outputs" : {
    "rhgs1PublicIP" : {
-      "Description" : "rhgs1 Node Public IP Address Username: gluster Password: Redhat16",
+      "Description" : "rhgs1 Node Public IP Address Username: rhsone Password: Redhat16",
       "Value" :  { "Ref" : "rhgs1NodeIPAddress" }
    },
    "winclientPublicIP" : {
@@ -1618,7 +1618,7 @@
    },
    "username" : {
       "Description" : "rhgs1 Node Username",
-      "Value" : "gluster"
+      "Value" : "rhsone"
    },
    "password" : {
       "Description" : "rhgs1 Node Password",
