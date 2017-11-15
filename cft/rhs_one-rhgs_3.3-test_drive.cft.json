@@ -724,7 +724,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
@@ -832,7 +831,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
@@ -940,7 +938,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
@@ -1048,7 +1045,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
@@ -1156,7 +1152,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
@@ -1264,7 +1259,6 @@
               "chmod 400 /{root,home/rhsone}/.ssh/config\n",
               "cat /home/rhsone/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/rhsone/.ssh/authorized_keys\n",
               "chown rhsone:rhsone /home/rhsone/.ssh/authorized_keys\n",
-	      "firewall-offline-cmd --add-service mdns\n",
 	      "rpm -e rh-amazon-rhui-client\n",
 	      "rpm -e rh-amazon-rhui-client-rhs30\n",
 	      "rm -rf /etc/yum.repos.d/*repo*\n"
