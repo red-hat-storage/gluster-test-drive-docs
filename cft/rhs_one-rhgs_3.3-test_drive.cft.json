@@ -60,7 +60,7 @@
     "ServerUserData" : {
       "Description" : "Common for node UserData",
       "Type" : "CommaDelimitedList",
-      "Default" :
+      "Default" : {
       "#!/bin/bash -v\n",
       "useradd rhsone\n",
       "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
@@ -118,6 +118,7 @@
       "rpm -e rh-amazon-rhui-client\n",
       "rpm -e rh-amazon-rhui-client-rhs30\n",
       "rm -rf /etc/yum.repos.d/*repo*\n"
+      }
     }
 },
 
