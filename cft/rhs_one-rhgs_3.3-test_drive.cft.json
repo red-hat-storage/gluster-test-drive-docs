@@ -62,9 +62,9 @@
       "Type" : "CommaDelimitedList",
       "Default" :
       "#!/bin/bash -v\n",
+      "useradd rhsone\n",
       "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
       "systemctl restart sshd.service\n",
-      "useradd rhsone\n",
       "echo Redhat16 | passwd rhsone --stdin\n",
       "echo \"rhsone ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
       "mkdir /home/rhsone/.ssh\n",
