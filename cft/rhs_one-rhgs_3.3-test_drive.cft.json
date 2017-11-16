@@ -789,7 +789,7 @@
        
         "UserData" : {
 	  "Fn::Base64" : {
-            "Fn::Join" : [ "", [ "Ref" : "ServerUserData" ] ]
+            "Fn::Join" : [ "", [ { "Ref" : "ServerUserData" } ] ]
 	  }
 	}
       }
