@@ -739,6 +739,266 @@
       }
     },
 
+    "rhgs2" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : [ "PublicSubnet", "PrivateSubnet1" ],
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs2"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs2"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs2"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "12",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
+            }
+          }
+        ],
+       
+        "UserData" : {
+	  "Fn::Base64" : { "Ref" : "ServerUserData" }
+	}
+      }
+    },
+
+    "rhgs3" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : [ "PublicSubnet", "PrivateSubnet1" ],
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs3"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs3"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs3"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "12",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
+            }
+          }
+        ],
+       
+        "UserData" : {
+	  "Fn::Base64" : { "Ref" : "ServerUserData" }
+	}
+      }
+    },
+
+    "rhgs4" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : [ "PublicSubnet", "PrivateSubnet1" ],
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs4"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs4"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs4"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "12",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
+            }
+          }
+        ],
+       
+        "UserData" : {
+	  "Fn::Base64" : { "Ref" : "ServerUserData" }
+	}
+      }
+    },
+
+    "rhgs5" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : [ "PublicSubnet", "PrivateSubnet1" ],
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs5"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs5"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs5"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "12",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
+            }
+          }
+        ],
+       
+        "UserData" : {
+	  "Fn::Base64" : { "Ref" : "ServerUserData" }
+	}
+      }
+    },
+
+    "rhgs6" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : [ "PublicSubnet", "PrivateSubnet1" ],
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs6"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs6"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs6"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "12",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "100",
+              "VolumeType": "standard"
+            }
+          }
+        ],
+       
+        "UserData" : {
+	  "Fn::Base64" : { "Ref" : "ServerUserData" }
+	}
+      }
+    },
+
 
    "client1" : {
       "Type" : "AWS::EC2::Instance",
