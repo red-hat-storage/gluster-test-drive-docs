@@ -680,7 +680,10 @@
       }
     },
 
-    "ServerUserData" : [
+    "ServerUserData" : {
+      "Description" : "Common for node UserData",
+      "Type" : "String",
+      "Default" : [
       "#!/bin/bash -v\n",
       "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
       "systemctl restart sshd.service\n",
@@ -738,7 +741,8 @@
       "rpm -e rh-amazon-rhui-client\n",
       "rpm -e rh-amazon-rhui-client-rhs30\n",
       "rm -rf /etc/yum.repos.d/*repo*\n"
-    ],
+      ]
+    },
 
 
     "rhgs1" : {
