@@ -524,6 +524,18 @@
       }
     },
 
+    "PublicNet1rhgs2" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.12"
+      }
+    },
+
     "PrivateNet1rhgs3" : {
      "Type" : "AWS::EC2::NetworkInterface",
      "Properties" : {
@@ -533,6 +545,18 @@
         "GroupSet": [{ "Ref" : "RedHatServerSG" }],
         "SubnetId": {"Ref" : "PrivateSubnet1"},
         "PrivateIpAddress": "10.100.1.13"
+      }
+    },
+
+    "PublicNet1rhgs3" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.13"
       }
     },
 
@@ -548,6 +572,18 @@
       }
     },
 
+    "PublicNet1rhgs4" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.14"
+      }
+    },
+
     "PrivateNet1rhgs5" : {
      "Type" : "AWS::EC2::NetworkInterface",
      "Properties" : {
@@ -560,6 +596,18 @@
       }
     },
 
+    "PublicNet1rhgs5" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.15"
+      }
+    },
+
     "PrivateNet1rhgs6" : {
      "Type" : "AWS::EC2::NetworkInterface",
      "Properties" : {
@@ -569,6 +617,18 @@
         "GroupSet": [{ "Ref" : "RedHatServerSG" }],
         "SubnetId": {"Ref" : "PrivateSubnet1"},
         "PrivateIpAddress": "10.100.1.16"
+      }
+    },
+
+    "PublicNet1rhgs6" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.16"
       }
     },
 
@@ -754,6 +814,9 @@
         "NetworkInterfaces" : [ 
           {
             "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs2"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs2"}, "DeviceIndex" : "1" 
           }
         ],
         "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
@@ -861,6 +924,9 @@
         "NetworkInterfaces" : [ 
           {
             "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs3"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs3"}, "DeviceIndex" : "1" 
           }
         ],
         "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
@@ -968,6 +1034,9 @@
         "NetworkInterfaces" : [ 
           {
             "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs4"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs4"}, "DeviceIndex" : "1" 
           }
         ],
         "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
@@ -1075,6 +1144,9 @@
         "NetworkInterfaces" : [ 
           {
             "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs5"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs5"}, "DeviceIndex" : "1" 
           }
         ],
         "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
@@ -1182,6 +1254,9 @@
         "NetworkInterfaces" : [ 
           {
             "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs6"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs6"}, "DeviceIndex" : "1" 
           }
         ],
         "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
