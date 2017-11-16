@@ -59,7 +59,7 @@
 
     "ServerUserData" : {
       "Description" : "Common for node UserData",
-      "Type" : "List",
+      "Type" : "List<1>",
       "Default" : [
       "#!/bin/bash -v\n",
       "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
