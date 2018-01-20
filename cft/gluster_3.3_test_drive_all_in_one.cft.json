@@ -1,0 +1,2352 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Red Hat Gluster Storage 3.3 Test Drive",
+
+  "Parameters" : {
+
+    "EnabledAZs" : {
+      "Description" : "List of AZs enabled for this account and region",
+      "Type" : "CommaDelimitedList"
+    },
+
+    "KeyName" : {
+      "Description" : "Name of an EC2 KeyPair to SSH into instances",
+      "Type" : "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "Default" : "RHSSHKey",
+      "NoEcho": "true",
+      "AllowedPattern" : "[-_ a-zA-Z0-9]*",
+      "ConstraintDescription" : "can contain only alphanumeric characters, spaces, dashes and underscores."
+    },
+
+
+    "CustomerRef" : {
+      "Description" : "Red Hat Storage Customer Reference for Tagging Resources",
+      "Type" : "String",
+      "Default" : "DefaultRef"
+    },
+
+
+    "CustomerEmailRef" : {
+      "Description" : "Red Hat Storage Customer Email Reference for Tagging Resources",
+      "Type" : "String",
+      "Default" : "DefaultEmailRef"
+    },
+
+
+    "NATInstanceType" : {
+      "Description" : "NAT Device EC2 instance type",
+      "Type" : "String",
+      "Default" : "t2.medium",
+      "NoEcho": "true"
+    },
+
+    "RedHatStorageServerInstanceType" : {
+      "Description" : "Red Hat Storage Server EC2 instance type",
+      "Type" : "String",
+      "Default" : "c4.large",
+      "NoEcho": "true"
+    },
+
+    "RedHatStorageClientInstanceType" : {
+      "Description" : "Red Hat Storage Clients EC2 instance type",
+      "Type" : "String",
+      "Default" : "t2.medium",
+      "NoEcho": "true"
+    }
+},
+
+  "Mappings" : {
+    
+    "AWSNATAMI" : {
+      "us-east-1"      : { "AMI" : "ami-dd3dd7cb" },
+      "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
+      "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "ap-southeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "ap-northeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
+    },
+
+
+    "RHSSERVERAMI" : {
+      "us-east-1"      : { "AMI" : "ami-0d725c77" },
+      "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
+      "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "ap-southeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "ap-northeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
+    },
+
+
+    "RHSCLIENTAMI" : {
+      "us-east-1"      : { "AMI" : "ami-2051294a" },
+      "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
+      "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "ap-southeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "ap-northeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
+    },
+
+    "WINCLIENTAMI" : {
+      "us-east-1"      : { "AMI" : "ami-9f226c88" },
+      "us-west-2"      : { "AMI" : "ami-xxxxxxxx" },
+      "us-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "eu-west-1"      : { "AMI" : "ami-xxxxxxxx" },
+      "ap-southeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "ap-northeast-1" : { "AMI" : "ami-xxxxxxxx" },
+      "sa-east-1"      : { "AMI" : "ami-xxxxxxxx" }
+    },
+
+
+    "SubnetConfig" : {
+      "VPC"     : { "CIDR" : "10.100.0.0/16" },
+      "Public"  : { "CIDR" : "10.100.0.0/24" },
+      "Private1" : { "CIDR" : "10.100.1.0/24" },
+      "Private2" : { "CIDR" : "10.100.2.0/24" }
+    }
+},
+
+  "Resources" : {
+
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "VPC"}
+        ]
+      }
+    },
+
+
+    "PublicSubnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "Public", "CIDR" ]},
+        "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicSubnet"}
+        ]
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "InternetGateway"}
+        ]
+      }
+    },
+
+    "GatewayToInternet" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "DependsOn" : ["VPC", "InternetGateway"],
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+    },
+
+    "PublicRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicRouteTable"}
+        ]
+      }
+    },
+
+    "PublicRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : ["PublicRouteTable", "InternetGateway"],
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PublicRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn" : [ "PublicRouteTable",  "PublicSubnet"],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "PublicNetworkAcl" : {
+      "Type" : "AWS::EC2::NetworkAcl",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+          { "Key": "Name", "Value" : "PublicNetworkACL"}
+        ]
+      }
+    },
+
+    "InboundHTTPPublicNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PublicNetworkAcl",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PublicNetworkAcl" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "OutboundPublicNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PublicNetworkAcl",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PublicNetworkAcl" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "PublicSubnetNetworkAclAssociation" : {
+      "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+      "DependsOn": [ "PublicSubnet", "PublicNetworkAcl"],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "NetworkAclId" : { "Ref" : "PublicNetworkAcl" }
+      }
+    },
+
+    "PrivateSubnet1" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "Private1", "CIDR" ]},
+        "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateSubnet1"}
+        ]
+      }
+    },
+
+    "PrivateRouteTable1" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateRouteTable1"}
+        ]
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation1" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn" : [ "PrivateSubnet1", "PrivateRouteTable1" ],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet1" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable1" }
+      }
+    },
+
+    "PrivateRoute1" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : ["PrivateRouteTable1", "NATDevice" ],
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTable1" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "NATDevice" }
+      }
+    },
+
+    "PrivateNetworkAcl1" : {
+      "Type" : "AWS::EC2::NetworkAcl",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private1" },
+          { "Key": "Name", "Value" : "PrivateNetworkACL1"}
+        ]
+      }
+    },
+
+    "InboundPrivateNetworkAclEntry1" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl1",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl1" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "OutBoundPrivateNetworkAclEntry1" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl1",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl1" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "PrivateSubnetNetworkAclAssociation1" : {
+      "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+      "DependsOn" : ["PrivateSubnet1", "PrivateNetworkAcl1"],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet1" },
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl1" }
+      }
+    },
+
+
+    "PrivateSubnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "Private2", "CIDR" ]},
+        "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "EnabledAZs" } ] },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateSubnet2"}
+        ]
+      }
+    },
+
+    "PrivateRouteTable2" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateRouteTable2"}
+        ]
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation2" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "DependsOn" : [ "PrivateSubnet2", "PrivateNetworkAcl2" ],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet2" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable2" }
+      }
+    },
+
+    "PrivateRoute2" : {
+      "Type" : "AWS::EC2::Route",
+      "DependsOn" : [ "PrivateRouteTable2", "NATDevice" ],
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "PrivateRouteTable2" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "NATDevice" }
+      }
+    },
+
+    "PrivateNetworkAcl2" : {
+      "Type" : "AWS::EC2::NetworkAcl",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Private2" },
+          { "Key": "Name", "Value" : "PrivateNetworkACL2"}
+        ]
+      }
+    },
+
+    "InboundPrivateNetworkAclEntry2" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl2",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl2" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+    "InboundSSHPrivateNetworkAclEntry2" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl2",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl2" },
+        "RuleNumber" : "101",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "22", "To" : "22" }
+      }
+    },
+
+    "OutBoundPrivateNetworkAclEntry2" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl2",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl2" },
+        "RuleNumber" : "100",
+        "Protocol" : "-1",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "OutBoundSSHPrivateNetworkAclEntry2" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "DependsOn" : "PrivateNetworkAcl2",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl2" },
+        "RuleNumber" : "101",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "0.0.0.0/0",
+        "PortRange" : { "From" : "22", "To" : "22" }
+      }
+    },
+    
+    "PrivateSubnetNetworkAclAssociation2" : {
+      "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+      "DependsOn" : ["PrivateSubnet2", "PrivateNetworkAcl2"],
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PrivateSubnet2" },
+        "NetworkAclId" : { "Ref" : "PrivateNetworkAcl2" }
+      }
+    },
+
+    "NATDevice" : {
+      "Type" : "AWS::EC2::Instance",
+      "DependsOn" : "PublicSubnet",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "NATInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "SourceDestCheck" : "false",
+        "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "RHS-NAT"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "SecurityGroupIds" : [{ "Ref" : "NATSG" }]
+      }
+    },
+
+    "NATIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : "NATDevice",
+      "Properties" : {
+        "Domain" : "vpc",
+        "InstanceId" : { "Ref" : "NATDevice" }
+      }
+    },
+
+    "PrivateNet1rhgs1" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.11"
+      }
+    },
+
+    "PublicNet1rhgs1" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.11"
+      }
+    },
+
+    "PrivateNet1rhgs2" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.12"
+      }
+    },
+
+    "PrivateNet1rhgs3" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.13"
+      }
+    },
+
+    "PrivateNet1rhgs4" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.14"
+      }
+    },
+
+    "PrivateNet1rhgs5" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.15"
+      }
+    },
+
+    "PrivateNet1rhgs6" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for rhgs nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatServerSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.16"
+      }
+    },
+
+    "PrivateNet1client1" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.101"
+      }
+    },
+
+    "PrivateNet1client2" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.102"
+      }
+    },
+
+    "PrivateNet1winclient" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstInterface"}],
+        "Description": "This is a first private network interface for win client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PrivateSubnet1"},
+        "PrivateIpAddress": "10.100.1.103"
+      }
+    },
+
+    "PublicNet1winclient" : {
+     "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Tags": [{"Key":"Name","Value":"FirstPublicInterface"}],
+        "Description": "This is a first public network interface for win client nodes",
+        "SourceDestCheck": "false",
+        "GroupSet": [{ "Ref" : "RedHatClientSG" }],
+        "SubnetId": {"Ref" : "PublicSubnet"},
+        "PrivateIpAddress": "10.100.0.103"
+      }
+    },
+
+
+    "rhgs1" : {
+      "Type" : "AWS::EC2::Instance",
+       "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "DependsOn" : "PublicSubnet",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs1"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1rhgs1"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs1"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+       
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs1.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-for-rhel-7-server-rpm\n",
+              "yum -y install redhat-storage-server.noarch-3.3.1.0-1.el7rhgs gdeploy-2.0.2-19.el7rhgs ansible-2.3.2.0-1.el7\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+              "cat << EOF | tee -a /etc/sysconfig/network-scripts/ifcfg-eth1\n",
+              "DEVICE=\"eth1\"\n",
+              "BOOTPROTO=\"dhcp\"\n",
+              "ONBOOT=\"yes\"\n",
+              "TYPE=\"Ethernet\"\n",
+              "USERCTL=\"yes\"\n",
+              "PEERDNS=\"yes\"\n",
+              "IPV6INIT=\"no\"\n",
+              "EOF\n",
+              "ifup eth1\n",
+              "ip route del default via 10.100.1.1 dev eth0  proto static  metric 100\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "rhgs2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs2"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs2"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+       
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+             "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs2.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-samba-for-rhel-7-server-rpms\n",
+              "yum -y install redhat-storage-server-3.1.3.0-4.el7rhgs gdeploy-2.0-16.el7rhgs ansible-1.9.4-1.el7aos\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "rhgs3" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs3"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs3"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs3.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-samba-for-rhel-7-server-rpms\n",
+              "yum -y install redhat-storage-server-3.1.3.0-4.el7rhgs gdeploy-2.0-16.el7rhgs ansible-1.9.4-1.el7aos\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "rhgs4" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs4"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs4"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs4.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-samba-for-rhel-7-server-rpms\n",
+              "yum -y install redhat-storage-server-3.1.3.0-4.el7rhgs gdeploy-2.0-16.el7rhgs ansible-1.9.4-1.el7aos\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "rhgs5" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs5"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs5"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs5.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-samba-for-rhel-7-server-rpms\n",
+              "yum -y install redhat-storage-server-3.1.3.0-4.el7rhgs gdeploy-2.0-16.el7rhgs ansible-1.9.4-1.el7aos\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+
+    "rhgs6" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageServerInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1rhgs6"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "ImageId" : { "Fn::FindInMap" : [ "RHSSERVERAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "Tags" : [{ "Key": "Name", "Value" : "rhgs6"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sdb",
+            "VirtualName" : "gluster-brick-xvdb",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdc",
+            "VirtualName" : "gluster-brick-xvdc",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          },{
+            "DeviceName" : "/dev/sdd",
+            "VirtualName" : "gluster-brick-xvdd",
+            "Ebs" : { 
+              "VolumeSize" : "10",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname rhgs6.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum-config-manager --enable rhui-REGION-rh-gluster-3-samba-for-rhel-7-server-rpms\n",
+              "yum -y install redhat-storage-server-3.1.3.0-4.el7rhgs gdeploy-2.0-16.el7rhgs ansible-1.9.4-1.el7aos\n",
+              "yum -y groupinstall RH-Gluster-Samba-Server\n",
+              "yum -y install vim-enhanced emacs\n",
+	      "echo \"fix for reported library error in lab\"\n",
+	      "yum -y install krb5-libs\n",
+              "systemctl enable smb.service\n",
+              "systemctl start smb.service\n",
+              "tuned-adm profile rhgs-sequential-io\n",
+              "cat << EOF | tee -a /home/student/repvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=repvol\n",
+              "replica=yes\n",
+              "replica_count=2\n",
+              "force=yes\n",
+              "EOF\n",
+              "cat << EOF | tee -a /home/student/repvol-expand.conf\n",
+              "[hosts]\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdc\n",
+              "vgs=rhgs_vg2\n",
+              "pools=rhgs_thinpool2\n",
+              "lvs=rhgs_lv2\n",
+              "mountpoints=/rhgs/brick_xvdc\n",
+              "brick_dirs=/rhgs/brick_xvdc/repvol\n",
+              "\n",
+              "[volume]\n",
+              "action=add-brick\n",
+              "volname=rhgs1:repvol\n",
+              "bricks=rhgs3:/rhgs/brick_xvdc/repvol,rhgs4:/rhgs/brick_xvdc/repvol,rhgs5:/rhgs/brick_xvdc/repvol,rhgs6:/rhgs/brick_xvdc/repvol\n",
+              "EOF\n",
+              "mkdir /home/student/example\n",
+              "cat << EOF | tee -a /home/student/example/ecvol.conf\n",
+              "[hosts]\n",
+              "rhgs1\n",
+              "rhgs2\n",
+              "rhgs3\n",
+              "rhgs4\n",
+              "rhgs5\n",
+              "rhgs6\n",
+              "\n",
+              "[backend-setup]\n",
+              "devices=xvdd\n",
+              "vgs=rhgs_vg3\n",
+              "pools=rhgs_thinpool3\n",
+              "lvs=rhgs_lv3\n",
+              "mountpoints=/rhgs/brick_xvdd\n",
+              "brick_dirs=/rhgs/brick_xvdd/ecvol\n",
+              "\n",
+              "[volume]\n",
+              "action=create\n",
+              "volname=ecvol\n",
+              "disperse=yes\n",
+              "disperse_count=4\n",
+              "redundancy_count=2\n",
+              "force=yes\n",
+              "\n",
+              "[clients]\n",
+              "action=mount\n",
+              "volname=ecvol\n",
+              "hosts=client1,client2\n",
+              "fstype=glusterfs\n",
+              "client_mount_points=/rhgs/client/native/ecvol\n",
+              "EOF\n",
+              "chown student:student /home/student/repvol.conf\n",
+              "chown student:student /home/student/repvol-expand.conf\n",
+              "chown student:student /home/student/example/ecvol.conf\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "pvcreate /dev/xvdb\n",
+              "vgcreate rhgs_vg1 /dev/xvdb\n",
+              "lvcreate -l 100%FREE -T rhgs_vg1/rhgs_thinpool1\n",
+              "lvchange --zero n rhgs_vg1/rhgs_thinpool1\n",
+              "lvcreate -V 10G -T rhgs_vg1/rhgs_thinpool1 -n rhgs_lv1\n",
+              "mkfs.xfs -i size=512 -n size=8192 /dev/rhgs_vg1/rhgs_lv1\n",
+              "mkdir -p /rhgs/brick_xvdb/\n",
+              "echo \"/dev/rhgs_vg1/rhgs_lv1 /rhgs/brick_xvdb xfs rw,inode64,noatime,nouuid 1 2\" | tee -a /etc/fstab\n",
+              "mount /rhgs/brick_xvdb\n",
+              "semanage fcontext -a -t glusterd_brick_t /rhgs/brick_xvdb\n",
+              "restorecon -Rv /rhgs/brick_xvdb\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+ 
+   "client1" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageClientInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSCLIENTAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1client1"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "client1"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname client1.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum -y install glusterfs-libs-3.7.9-12.el7 glusterfs-fuse-3.7.9-12.el7 nfs-utils-1.3.0-0.21.el7\n",
+              "yum -y install vim-enhanced emacs\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+              "cat << EOF > /home/student/fopmaker.sh\n",
+              "#!/bin/bash\n",
+              "echo 'Generating interesting file operations. Please wait...'\n",
+              "for s in 32 256 2k 16k 64k; do \n",
+              "  mkdir /rhgs/client/native/\\${1}/mydir/profile\\${s} >/dev/null 2>&1\n",
+              "  dd if=/dev/zero of=/rhgs/client/native/\\${1}/mydir/profile\\${s}/file\\$s bs=\\$s count=1024 >/dev/null 2>&1\n",
+              "  dd if=/rhgs/client/native/\\${1}/mydir/profile\\${s}/file\\$s bs=\\$s >/dev/null 2>&1\n",
+              "  find /rhgs/client/native/\\${1}/mydir -name *\\${s} | xargs stat - >/dev/null 2>&1\n",
+              "done\n",
+              "echo 'Done!'\n",
+              "EOF\n",
+              "chmod 755 /home/student/fopmaker.sh\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+ 
+   "client2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata": {
+          "AWS::CloudFormation::Init": {
+            "config": {
+              "packages": {
+                "yum": {
+                  "ntp" : [],
+                  "sshd" : []
+                }
+              }
+            }
+          }
+        }, 
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageClientInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "RHSCLIENTAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1client2"}, "DeviceIndex" : "0" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "client2"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}],
+
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -v\n",
+              "useradd student\n",
+              "echo Redhat16 | passwd student --stdin\n",
+              "echo \"student ALL=(ALL) NOPASSWD: ALL\" | tee -a /etc/sudoers\n",
+              "mkdir /home/student/.ssh\n",
+              "cp /home/ec2-user/.ssh/authorized_keys /home/student/.ssh\n",
+              "chown -R student:student /home/student/.ssh\n",
+              "chmod -R og-rwx /home/student/.ssh\n",
+              "hostnamectl set-hostname client2.gluster.lab\n",
+              "cat << EOF | tee -a /etc/hosts\n",
+              "10.100.1.11 rhgs1 rhgs1.gluster.lab\n",
+              "10.100.1.12 rhgs2 rhgs2.gluster.lab\n",
+              "10.100.1.13 rhgs3 rhgs3.gluster.lab\n",
+              "10.100.1.14 rhgs4 rhgs4.gluster.lab\n",
+              "10.100.1.15 rhgs5 rhgs5.gluster.lab\n",
+              "10.100.1.16 rhgs6 rhgs6.gluster.lab\n",
+              "10.100.2.17 rhgs7 rhgs7.remote.gluster.lab\n",
+              "10.100.2.18 rhgs8 rhgs8.remote.gluster.lab\n",
+              "10.100.1.101 client1 client1.gluster.lab\n",
+              "10.100.1.102 client2 client2.gluster.lab\n",
+              "10.100.1.103 winclient winclient.gluster.lab\n",
+              "EOF\n",
+              "yum -y install glusterfs-libs-3.7.9-12.el7 glusterfs-fuse-3.7.9-12.el7 nfs-utils-1.3.0-0.21.el7\n",
+              "yum -y install vim-enhanced emacs\n",
+              "cat << EOF | tee -a /home/gluster/.ssh/id_rsa\n",
+              "-----BEGIN RSA PRIVATE KEY-----\n",
+              "MIIEowIBAAKCAQEAuGBA98iGw4D1MiOsK/eXks0eTTsil8srE4dyKz+a0YmHM5wR\n",
+              "gEM93DVX4/QeIr59mIV488VRtDrKnbNBa2ndwE0S+/YfFKwvTiNz8rCTKCd6nWYJ\n",
+              "3lDY9kbhsvWe+MpyN5qaOQOqWbVIpsIKD6+dyVhBiDkdfh2c8Xl5ppDgcShlOxrR\n",
+              "/l3U3tsXWbx3ijiljObdClU0OzgCfrkAWY1fCkB8gfDLK5u9EFJ4o7092Fvk4p+p\n",
+              "D+6lD++AHhBs9dp0kZ1EwK+xLNxuPsVwJUr/4tJLlfdFuEiSfFDhXXFg7dJ3tkVC\n",
+              "6KK58hz/avN7hr8UP3Ay08hZnDLLIeqmJuS0FQIDAQABAoIBAFSk486dgbjpUCfn\n",
+              "lphMv4pGnr2oA1aakDkT+ob+WU4PDEHWSXaP6CtbVfEx1k/vEevegsuu77aFMxW5\n",
+              "ALSWUpaBC9EeieBMuB7wSb/F7pkFntX5zVgB18kge2dUOdpP3qXGVT0NgLxUbHka\n",
+              "JdJTtmWEHfmy9uY6JB37vayJYHCx6YBz+JWaphqK8qPSsP2RNXv0gMngxylnLVoO\n",
+              "0OfjyQVygfSvwoj13y0QzOmdRAGrpjo2UgWA0im/vNCqKdszS/JgWZGduJZo2MQa\n",
+              "RIkqOgKw2i/halzAPSJSpTbJSfm9LeqxPgnaUs4slgPcEG/9y8OUEruFvqUGol5r\n",
+              "p86s+bUCgYEA7sauYxYTn0WlaIrQ7C/uVy5PrP9mkwCRrbBYNBhGdnHPa/VLofSe\n",
+              "ergif0XVoN8hcy5hjnVgMFCuaicqzLV4uFmJutq0bvEt6iiNj/t7+6QvWXe4H+GG\n",
+              "i38gTNscJF8c7Djo2oXbJaRLu3+Ic42HlBxGLcB5947tdQcmbx7bH4sCgYEAxa0A\n",
+              "iwpmK9q8BBeu7iT/s6e4/HocJpnMlpoDsBxgqBKE9oUOz6WDZ88C0Z6NUGM9l93Y\n",
+              "Y7HSCww1F6DzgfdRDpgaPnPPUXrC3f+K2usVuNd2MPciwJn5t6qh02bE5c+7I1Pp\n",
+              "9/XMMaRQKW2o0Yjd0kSsMO63Azdei0zbUpIz7t8CgYEAyvNk1iO1mfMAnNMgsSAs\n",
+              "XT2ny0tqTBh3ukHhNqZLffFOdFySZJ4e9f/8kmExKwN80wHhOczabTamiOOxpT25\n",
+              "1jeEsaWjJ4knlZfSe0cuIr1y4YC4p6BxU7BCLBEw4llVpBLbGKIdmukC1eOYf18U\n",
+              "lfdSTyECikCZ5JanPFvls/ECgYAAu6J74X79fKMj1L6mTWbRULbj4MQH9JwIluua\n",
+              "lJBbLy5lB5tFc9Sn5uGYy2C0wplw3ba2r+sadWIhA0zD15nqVvAJ+T30jGL6lb77\n",
+              "DtIWzF240sHDOw7s+mn9Ma1bOMj12ZLNg5DNQlG1xZ1RoZNI+040JD5zeZoVJCTQ\n",
+              "CpC8uwKBgCyopWM9hDi8CyjT9E3QnsSW3fBkFoV6+vXT7JJqqVKy/R87j6i3OLRw\n",
+              "qsNYd4cYTYFaGRVpf9I9D92BL6iUiiWrx6S8TKq6JZKl8XvSOxeqMX3z8eZyyJH3\n",
+              "4KmWJ4afHd9oohcvnHLrTUcaIIZyUZb3VnUeW10VY0n1U27lKRIG\n",
+              "-----END RSA PRIVATE KEY-----\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /home/student/.ssh/id_rsa.pub\n",
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4YED3yIbDgPUyI6wr95eSzR5NOyKXyysTh3IrP5rRiYcznBGAQz3cNVfj9B4ivn2YhXjzxVG0Osqds0Frad3ATRL79h8UrC9OI3PysJMoJ3qdZgneUNj2RuGy9Z74ynI3mpo5A6pZtUimwgoPr53JWEGIOR1+HZzxeXmmkOBxKGU7GtH+XdTe2xdZvHeKOKWM5t0KVTQ7OAJ+uQBZjV8KQHyB8Msrm70QUnijvT3YW+Tin6kP7qUP74AeEGz12nSRnUTAr7Es3G4+xXAlSv/i0kuV90W4SJJ8UOFdcWDt0ne2RULoornyHP9q83uGvxQ/cDLTyFmcMssh6qYm5LQV student@rhgs1.gluster.lab\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/id_rsa.pub\n",
+              "chmod 400 /home/student/.ssh/id_rsa\n",
+              "cat << EOF | tee -a /root/.ssh/config | tee -a /home/student/.ssh/config\n",
+              "Host rhgs* client* 10.100*\n",
+              "StrictHostKeyChecking no\n",
+              "UserKnownHostsFile=/dev/null\n",
+              "EOF\n",
+              "chown student:student /home/student/.ssh/config\n",
+              "chmod 400 /{root,home/student}/.ssh/config\n",
+              "cat /home/student/.ssh/id_rsa.pub | tee -a /root/.ssh/authorized_keys | tee -a /home/student/.ssh/authorized_keys\n",
+              "chown student:student /home/student/.ssh/authorized_keys\n",
+              "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config\n",
+              "systemctl restart sshd.service\n",
+              "cat << EOF > /home/student/fopmaker.sh\n",
+              "#!/bin/bash\n",
+              "echo 'Generating interesting file operations. Please wait...'\n",
+              "for s in 32 256 2k 16k 64k; do \n",
+              "  mkdir /rhgs/client/native/\\${1}/mydir/profile\\${s} >/dev/null 2>&1\n",
+              "  dd if=/dev/zero of=/rhgs/client/native/\\${1}/mydir/profile\\${s}/file\\$s bs=\\$s count=1024 >/dev/null 2>&1\n",
+              "  dd if=/rhgs/client/native/\\${1}/mydir/profile\\${s}/file\\$s bs=\\$s >/dev/null 2>&1\n",
+              "  find /rhgs/client/native/\\${1}/mydir -name *\\${s} | xargs stat - >/dev/null 2>&1\n",
+              "done\n",
+              "echo 'Done!'\n",
+              "EOF\n",
+              "chmod 755 /home/student/fopmaker.sh\n",
+	      "rpm -e rh-amazon-rhui-client\n",
+	      "rpm -e rh-amazon-rhui-client-rhs30\n",
+	      "rm -rf /etc/yum.repos.d/*repo*\n"
+            ]]
+          }
+        }
+      }
+    },
+
+   "winclient" : {
+      "Type" : "AWS::EC2::Instance",
+      "DependsOn" : "PublicSubnet",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "RedHatStorageClientInstanceType" },
+        "KeyName"  : { "Ref" : "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "WINCLIENTAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          {
+            "NetworkInterfaceId" : {"Ref" : "PrivateNet1winclient"}, "DeviceIndex" : "0" 
+          },
+          {
+            "NetworkInterfaceId" : {"Ref" : "PublicNet1winclient"}, "DeviceIndex" : "1" 
+          }
+        ],
+        "Tags" : [{ "Key": "Name", "Value" : "winclient"},{ "Key": "CustRef", "Value" : { "Ref" : "CustomerRef" }},{ "Key": "CustEmailRef", "Value" : { "Ref" : "CustomerEmailRef" }}]
+      }
+   },
+
+
+    "rhgs1NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["rhgs1","InternetGateway"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "Assocrhgs1NodeIPAddress" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "rhgs1NodeIPAddress", "AllocationId" ] },
+        "NetworkInterfaceId": {"Ref" : "PublicNet1rhgs1"}
+      }
+    },
+
+    "winclientNodeIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["winclient","InternetGateway"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+
+    "AssocwinclientNodeIPAddress" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt" : [ "winclientNodeIPAddress", "AllocationId" ] },
+        "NetworkInterfaceId": {"Ref" : "PublicNet1winclient"}
+      }
+    },
+
+    "NATSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "GroupDescription" : "Enable internal access to the NAT device",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "-1", "FromPort" : "0",  "ToPort" : "65535",  "CidrIp" : "0.0.0.0/0" },
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }
+          ],
+        "SecurityGroupEgress" : [
+          { "IpProtocol" : "-1", "FromPort" : "0",  "ToPort" : "65535",  "CidrIp" : "0.0.0.0/0" }]
+      }
+    },
+
+    "RedHatServerSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "GroupDescription" : "Enable access to the RedHatStorage Server devices",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+           { "IpProtocol" : "-1", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" },
+           { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" },
+           { "IpProtocol" : "tcp", "FromPort" : "8123", "ToPort" : "8123", "CidrIp" : "0.0.0.0/0" }
+           ],
+        "SecurityGroupEgress" : [
+           { "IpProtocol" : "-1", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }]
+      }
+    },
+
+    "RedHatClientSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "DependsOn" : "VPC",
+      "Properties" : {
+        "GroupDescription" : "Enable access to the RedHatStorage Client devices",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+           { "IpProtocol" : "-1", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" },
+           { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0" }],
+         "SecurityGroupEgress" : [
+           { "IpProtocol" : "-1", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }]
+      }
+    }
+},
+
+
+  "Outputs" : {
+   "rhgs1PublicIP" : {
+      "Description" : "rhgs1 Node Public IP Address Username: student Password: Redhat16",
+      "Value" :  { "Ref" : "rhgs1NodeIPAddress" }
+   },
+   "winclientPublicIP" : {
+      "Description" : "winclient Node Public IP Address",
+      "Value" :  { "Ref" : "winclientNodeIPAddress" }
+   },
+   "username" : {
+      "Description" : "rhgs1 Node Username",
+      "Value" : "student"
+   },
+   "password" : {
+      "Description" : "rhgs1 Node Password",
+      "Value" : "Redhat16"
+   }
+
+  }
+}
