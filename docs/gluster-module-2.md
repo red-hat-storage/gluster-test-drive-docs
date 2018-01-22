@@ -25,7 +25,7 @@ If you have not already done so, click the <img src="http://us-west-2-aws-traini
 Connect to the **rhgs1** server instance using its public IP address from the **Addl. Info** tab to the right (Linux/Mac example below).
 
 ```bash
-ssh gluster@<rhgs1PublicIP>
+ssh student@<rhgs1PublicIP>
 ```
 
 ### Node Peering
@@ -246,7 +246,7 @@ cat ~/repvol.conf
 
 In order to use `gdeploy`, the node from which it is run requires passwordless ssh access to the root account on all nodes in the Gluster trusted pool (including itself, if the gdeploy node is also a Gluster pool node, as it is in this example).
 
-> **NOTE:** *Your Amazon AWS lab by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the gluster user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
+> **NOTE:** *Your Amazon AWS lab by default uses only keypairs for SSH authentication and configures no password-based access to the instances. Because of this, we have pre-populated keys to allow the student user on each node to login as the root user on all nodes using the `~/.ssh/id_rsa` private key.* **The commands below are for reference only and do not need to be run for this lab.**
 
 ``ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''``
 ``for i in {1..6}; do ssh-copy-id -i ~/.ssh/id_rsa root@rhgs$i; done``
@@ -335,7 +335,7 @@ For many common use cases, the well-established NFS protocol is used for ease of
 You can connect to the **client1** system via `ssh` directly from the rhgs1 system.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Here, on the RHEL client, you will mount via NFS the Gluster **distvol** volume you created above.
@@ -457,7 +457,7 @@ ls /rhgs/client/nfs/distvol/mydir/ | wc -l
 In order to make your Gluster volume available to Windows clients, you need to make a few configuration changes. Re-connect to the **rhgs1** node from your local ssh client. (NOTE - After following the above instructions, you may simply type `exit` from **client1** to return to **rhgs1**)
 
 ```bash
-ssh gluster@<rhgs1PublicIP>
+ssh student@<rhgs1PublicIP>
 ```
 
 From node **rhgs1**, run the below commands to modify the **repvol** volume.
@@ -537,7 +537,7 @@ dir Z:\mysmbdir | measure-object -line
 Connect to **client1** again via SSH from **rhgs1**.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 
@@ -560,7 +560,7 @@ ls /rhgs/client/native/repvol/mysmbdir | wc -l
 Connect to **rhgs1** again with your local ssh client (simply type `exit` to return to **rhgs1** from **client1**).
 
 ```bash
-ssh gluster@<rhgs1PublicIP>
+ssh student@<rhgs1PublicIP>
 ```
 
 Looking at the brick backend for the **distvol** volume on Gluster node **rhgs1**, you can see that only a subset of the 200 files that you created are present on this brick. (Note the exact files you see may be different than the examples below.)
@@ -577,7 +577,7 @@ ls /rhgs/brick_xvdb/distvol/mydir/
 Now connect to **rhgs2** -- As a convenience, you can do this directly from node **rhgs1**.
 
 ```bash
-ssh gluster@rhgs2
+ssh student@rhgs2
 ```
 
 Looking at the brick backend for the **distvol** volume on Gluster node **rhgs2**, you can see that *a different portion of the 200 files are located on this brick*.

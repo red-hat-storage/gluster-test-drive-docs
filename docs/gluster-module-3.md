@@ -22,7 +22,7 @@ If you have not already done so, click the <img src="http://us-west-2-aws-traini
 Connect to the **rhgs1** server instance using its public IP address from the **Addl. Info** tab to the right (Linux/Mac example below).
 
 ```bash
-ssh gluster@<rhgs1PublicIP>
+ssh student@<rhgs1PublicIP>
 ```
 
 ### If Needed, Create the repvol Volume
@@ -76,7 +76,7 @@ sudo ps -ef |grep glusterfs | grep -v grep
 From **rhgs1** connect via SSH to **client1**.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 If you did not already mount the **repvol** volume as part of Module 2, do it now.
@@ -136,7 +136,7 @@ ls /rhgs/brick_xvdc/repvol/mydir
 Connect to node **rhgs2** via SSH.
 
 ```bash
-ssh gluster@rhgs2
+ssh student@rhgs2
 ```
 
 On node **rhgs2**, note that the `volume status` output only shows the processes for itself and nothing for node **rhgs1**.
@@ -206,7 +206,7 @@ sudo systemctl start glusterd.service
 Connect again to **client1** via SSH.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Stat a file that you created above. This will trigger client-side self-heal.
@@ -245,7 +245,7 @@ In the lab modules so far you have worked separately with *Distributed* and *Rep
 From **rhgs1** connect via SSH to **client1**.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Add 200 new files to the **repvol** volume.
@@ -387,7 +387,7 @@ ls /rhgs/brick_xvdc/repvol/mydir | wc -l
 To further illustrate the effect of the rebalance, connect to node **rhgs5** via SSH and look at the file count in the brick backend there.
 
 ```bash
-ssh gluster@rhgs5
+ssh student@rhgs5
 ```
 
 ```bash
@@ -469,13 +469,13 @@ sudo gluster volume profile repvol start
 Connect to node **client1** via SSH from node **rhgs1**.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 For your convenience, a script called `fopmaker.sh` has been included to generate some interesting file operations on the volume. Run the command, passing the **repvol** volume name to it.
 
 ```bash
-/home/gluster/fopmaker.sh repvol
+/home/student/fopmaker.sh repvol
 ```
 
 ``Generating interesting file operations. Please wait...``
@@ -636,7 +636,7 @@ sudo gluster volume quota repvol list
 Connect again to node **client1** via SSH.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Attempt to create 200 10MB files in the **mydir** subdirectory of the volume. At some point during this command loop, the writes should fail with a **Disk quota exceeded** error message.

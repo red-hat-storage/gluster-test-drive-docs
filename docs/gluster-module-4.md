@@ -22,7 +22,7 @@ If you have not already done so, click the <img src="http://us-west-2-aws-traini
 Connect to the **rhgs1** server instance using its public IP address from the **Addl. Info** tab to the right (Linux/Mac example below).
 
 ```bash
-ssh gluster@<rhgs1PublicIP>
+ssh student@<rhgs1PublicIP>
 ```
 
 ## About Disperse Volumes
@@ -55,13 +55,13 @@ Disperse volumes should be used when capacity is of greater value than performan
 
 ## Build your gdeploy Configuration
 
-You will use the **Ansible**-based deployment tool `gdeploy` in order to create your disperse volume. For this, you will need to build a custom configuration file. Store this file as `/home/gluster/ecvol.conf`.
+You will use the **Ansible**-based deployment tool `gdeploy` in order to create your disperse volume. For this, you will need to build a custom configuration file. Store this file as `/home/student/ecvol.conf`.
 
 > **NOTE** For your convenience, the `vim` and `emacs` editing tools are installed on all lab systems.
 
 ### Hosts Section
 
-First you need to define in the `/home/gluster/ecvol.conf` config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
+First you need to define in the `/home/student/ecvol.conf` config file the set of Gluster hosts that will participate in the disperse volume. You will use all 6 of your local lab server nodes.
 
 ```ini
 [hosts]
@@ -114,17 +114,17 @@ fstype=glusterfs
 client_mount_points=/rhgs/client/native/ecvol
 ```
 
-> **NOTE** You can check your work against the provided `/home/gluster/example/ecvol.conf` file.
+> **NOTE** You can check your work against the provided `/home/student/example/ecvol.conf` file.
 
 
 ## Deploy and Review your Disperse Volume
 
-Using `gdeploy` and the `/home/gluster/ecvol.conf` file you've created, automate the deployment of your disperse **ecvol** volume.
+Using `gdeploy` and the `/home/student/ecvol.conf` file you've created, automate the deployment of your disperse **ecvol** volume.
 
 > **NOTE** The `sudo` tool is not needed for the `gdeploy` command.
 
 ```bash
-gdeploy -c /home/gluster/ecvol.conf
+gdeploy -c /home/student/ecvol.conf
 ```
 
 When the deployment completes, you should find that you have a properly-configured and started disperse Gluster volume.
@@ -199,7 +199,7 @@ Volume Information
 From **rhgs1** connect via SSH to **client1**.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Confirm that your **ecvol** volume is mounted.
@@ -231,12 +231,12 @@ ls -lh /rhgs/client/native/ecvol/mydir/
 
 <div><code>
 total 60M
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile0
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile1
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile2
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile3
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile4
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:11 ecfile5
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile0
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile1
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile2
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile3
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile4
+-rw-rw-r--. 1 student student 10M Nov 10 14:11 ecfile5
 </code></div>
 
 Validate that you have created **ASCII text** files.
@@ -261,12 +261,12 @@ ls -lh /rhgs/brick_xvdd/ecvol/mydir/
 
 <div><code>
 total 15M
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
 Each one of these files in a fragment of the file created at the client combined with the parity data required to calculate the reassembly of the file.
@@ -313,7 +313,7 @@ Volume Information
 Return again to **client1** via SSH.
 
 ```bash
-ssh gluster@client1
+ssh student@client1
 ```
 
 Perform file operations on the **ecvol** volume mount point to confirm that your data is still fully accessible with the volume in a degraded state.
@@ -324,12 +324,12 @@ ls -lh /rhgs/client/native/ecvol/mydir/
 
 <div><code>
 total 60M
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
+-rw-rw-r--. 1 student student 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile5
 </code></div>
 
 ```bash
@@ -346,7 +346,7 @@ stat /rhgs/client/native/ecvol/mydir/ecfile5
   File: ‘/rhgs/client/native/ecvol/mydir/ecfile5’
   Size: 10485760  	Blocks: 20480      IO Block: 131072 regular file
 Device: 24h/36d	Inode: 9763979935191258614  Links: 1
-Access: (0664/-rw-rw-r--)  Uid: ( 1001/ gluster)   Gid: ( 1001/ gluster)
+Access: (0664/-rw-rw-r--)  Uid: ( 1001/ student)   Gid: ( 1001/ student)
 Context: system_u:object_r:fusefs_t:s0
 Access: 2016-11-10 14:17:05.379530355 -0500
 Modify: 2016-11-10 14:17:06.790558942 -0500
@@ -370,13 +370,13 @@ ls -lh /rhgs/client/native/ecvol/mydir/
 
 <div><code>
 total 70M
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:16 ecfile0
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile1
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile2
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile3
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile4
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:17 ecfile5
--rw-rw-r--. 1 gluster gluster 10M Nov 10 14:29 ecfile6
+-rw-rw-r--. 1 student student 10M Nov 10 14:16 ecfile0
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile1
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile2
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile3
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile4
+-rw-rw-r--. 1 student student 10M Nov 10 14:17 ecfile5
+-rw-rw-r--. 1 student student 10M Nov 10 14:29 ecfile6
 </code></div>
 
 
@@ -394,13 +394,13 @@ ls -lh /rhgs/brick_xvdd/ecvol/mydir/
 
 <div><code>
 total 18M
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:29 ecfile6
 </code></div>
 
 
@@ -418,12 +418,12 @@ ls -lh /rhgs/brick_xvdd/ecvol/mydir/
 
 <div><code>
 total 15M
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile5
 </code></div>
 
 Re-start the Gluster services on the nodes where you stopped them above. These are nodes **rhgs2** and **rhgs5** in our example.
@@ -463,13 +463,13 @@ ls -lh /rhgs/brick_xvdd/ecvol/mydir/
 
 <div><code>
 total 18M
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:16 ecfile0
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile1
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile2
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile3
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile4
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:17 ecfile5
--rw-rw-r--. 2 gluster gluster 2.5M Nov 10 14:29 ecfile6
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:16 ecfile0
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile1
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile2
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile3
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile4
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:17 ecfile5
+-rw-rw-r--. 2 student student 2.5M Nov 10 14:29 ecfile6
 </code></div>
 
 Return to node **rhgs1**.
